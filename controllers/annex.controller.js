@@ -10,6 +10,7 @@ const Report = models.Report;
 const Service = models.Service;
 const Sequelize = require('sequelize');
 const op = Sequelize.Op;
+const errorMessage = require('../helpers/errormessage');
 const operatorsAliases = {
     $eq: op.eq,
     $or: op.or,
@@ -112,7 +113,7 @@ class AnnexController {
      * @param annexId
      * @param horaire
      * @param user
-     * @returns {Promise<Credential>}
+     * @returns {Promise<{message: *}>}
      */
     static async createAvailability(annexId, horaire, user) {
 
@@ -144,7 +145,8 @@ class AnnexController {
             }
             return annex;
         }
-        return "Vous n'avez pas le droit créer des disponibilité pour cette Annexe";
+        return errorMessage.jsonMessage("Vous n'avez pas le droit créer des disponibilité pour cette Annexe");
+
     }
 
     /**

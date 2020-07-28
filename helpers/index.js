@@ -1,4 +1,5 @@
 module.exports = {
     VerificationHelper: require('./VerificationHelper'),
-    ExcelParserHelper: require('./ExcelParserHelper')
+    ExcelParserHelper: require('./ExcelParserHelper'),
+    ErrorMessage: require('./errormessage')
 }
