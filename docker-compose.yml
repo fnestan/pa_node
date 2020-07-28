@@ -1,0 +1,15 @@
+version: '3.6'
+services:
+  adminer:
+    image: 'adminer:4.7'
+    ports:
+      - '8081:8080'
+  mysql:
+    image: 'mysql:5.7'
+    ports:
+      - '3636:3306'
+    environment:
+      - MYSQL_DATABASE=ConnexionAssociation
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
