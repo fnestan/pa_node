@@ -6,7 +6,12 @@ const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
 const Response = require("../helpers/response");
 const Message = require("../helpers/errormessage");
+const MailService = require('../service/mail.service');
 
+
+/*
+todo la route et le controller auth est terminé
+ */
 class AuthController {
 
     /**
@@ -52,6 +57,8 @@ class AuthController {
 
         });
         await user.setRole(role);
+        const contenu = "Bonjour \n Bienvenue  sur Connexion Association, la plateforme qui met en contact Association et particulier"
+        await MailService.sendMail(email, "Bienvenue", contenu);
         return Response.sendResponse(user, 201);
     }
 
