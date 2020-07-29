@@ -4,6 +4,8 @@ const Role = models.Role;
 const Image = models.Image;
 const bcrypt = require("bcrypt");
 const jsonwebtoken = require("jsonwebtoken");
+const Response = require("../helpers/response");
+const Message = require("../helpers/errormessage");
 
 class AuthController {
 
@@ -19,7 +21,7 @@ class AuthController {
      * @param phone
      * @param roleId
      * @param birthdate
-     * @returns {Promise<User>}
+     * @returns {Promise<[*, *]>}
      */
     static async subscribe(login, firstname, email, lastname, password, street, zipCode, city, phone, roleId, birthdate) {
 
@@ -50,14 +52,14 @@ class AuthController {
 
         });
         await user.setRole(role);
-        return user;
+        return Response.sendResponse(user, 201);
     }
 
 
     /**
      * @param login
      * @param password
-     * @returns {Promise<string>}
+     * @returns {Promise<[*, *]>}
      */
     static async login(login, password) {
         const userFound = await User.findOne({
@@ -80,30 +82,24 @@ class AuthController {
                 );
                 userFound.token = token;
                 if (userFound.validForUser === "ATTENTE") {
-                    return {
-                        message: "Votre inscription n'a pas encore été validée"
-                    };
+                    const error = new Message("Votre inscription n'a pas encore été validée")
+                    return Response.sendResponse(error, 401)
                 }
                 if (userFound.validForUser === "REFUSE") {
-                    return {
-                        message: "Votre inscription a été refusée"
-                    };
+                    const error = new Message("Votre inscription a été refusée")
+                    return Response.sendResponse(error, 401)
+
                 }
                 if (userFound.active) {
-
-                    return userFound.save();
-
-
+                    return Response.sendResponse(await userFound.save(), 200)
                 } else if (!userFound.active) {
-                    return {
-                        message: "Vous avez été banni de ce site"
-                    };
+                    const error = new Message("Vous avez été banni de ce site")
+                    return Response.sendResponse(error, 401)
                 }
             }
         }
-        return {
-            message: "L' email ou le mot de passe est incorrect"
-        };
+        const error = new Message("L' email ou le mot de passe est incorrect")
+        return Response.sendResponse(error, 400)
     }
 
 

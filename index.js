@@ -7,8 +7,13 @@ const fileUpload = require('express-fileupload');
 const bodyParser = require('body-parser');
 
 async function bootstrap() {
-    await models.sequelize.authenticate();
-    await models.sequelize.sync();
+
+    try {
+        await models.sequelize.authenticate();
+        await models.sequelize.sync();
+    }catch (e) {
+        console.log(e)
+    }
 
     const app = express();
     app.use(fileUpload({

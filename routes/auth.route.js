@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser');
 const AuthController = require('../controllers').AuthController;
 const Verification = require('../helpers').VerificationHelper;
+const ErrorMessage = require('../helpers').ErrorMessage;
 
 
 module.exports = function (app) {
@@ -39,18 +40,19 @@ module.exports = function (app) {
         if (!passwordConfirmationIsGoog) {
             return;
         }
-
-        if (roleId === 3 || roleId === 4) {
-            res.status(400).json("vous ne pouvez pas choisir un de ces rôle")
+        if (+roleId === 3 || +roleId === 4) {
+            const message = new ErrorMessage("vous ne pouvez pas choisir un de ces rôle");
+            res.status(400).json(message);
             return;
         }
-        if (roleId > 4) {
-            res.status(400).json("Ce rôle n'existe pas")
+        if (+roleId > 4 || +roleId < 1) {
+            const message = new ErrorMessage("Ce rôle n'existe pas");
+            res.status(400).json(message)
             return;
         }
         try {
             const user = await AuthController.subscribe(login, firstname, email, lastname, password, street, zipCode, city, phone, roleId, birthdate);
-            res.status(201).json(user);
+            res.status(user[1]).json(user[0]);
         } catch (err) {
             res.status(409).json(err);
         }
@@ -68,15 +70,9 @@ module.exports = function (app) {
         if (!allRequiredParams) return;
         try {
             const user = await AuthController.login(req.body.login, req.body.password);
-            if (user.message){
-                res.status(403).json(user);
-            } else {
-                res.status(200).json(user);
-
-            }
+            res.status(user[1]).json(user[0]);
         } catch (err) {
-            console.log(err)
-            res.status(500).end();
+            res.status(409).end(err);
         }
     });
 };

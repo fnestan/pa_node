@@ -1,8 +1,7 @@
 class errormessage {
-    static jsonMessage(error) {
-        return {
-            message: error
-        }
+    message;
+    constructor(message) {
+        this.message = message;
     }
 }
 
