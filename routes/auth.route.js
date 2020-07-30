@@ -51,10 +51,11 @@ module.exports = function (app) {
             return;
         }
         try {
-            const user = await AuthController.subscribe(login, firstname, email, lastname, password, street, zipCode, city, phone, roleId, birthdate);
-            res.status(user[1]).json(user[0]);
+            const response = await AuthController.subscribe(login, firstname, email, lastname, password, street, zipCode, city, phone, roleId, birthdate);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
+            const message = new ErrorMessage(err);
+            res.status(409).json(message);
         }
     });
 
@@ -69,10 +70,11 @@ module.exports = function (app) {
         const allRequiredParams = Verification.allRequiredParam(req.body.login, req.body.password, res);
         if (!allRequiredParams) return;
         try {
-            const user = await AuthController.login(req.body.login, req.body.password);
-            res.status(user[1]).json(user[0]);
+            const response = await AuthController.login(req.body.login, req.body.password);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).end(err);
+            const message = new ErrorMessage(err);
+            res.status(409).end(message);
         }
     });
 };

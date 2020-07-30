@@ -7,13 +7,15 @@ const Donation = models.Donation;
 const Annex = models.Annex;
 const UserDonation = models.UserDonation;
 const MailService = require('../service/mail.service');
+const Response = require("../helpers/response");
+const Message = require("../helpers/errormessage");
 
 class UserController {
 
     /**
      *
      * @param userId
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async banUser(userId) {
 
@@ -28,6 +30,9 @@ class UserController {
             }
         });
         await MailService.sendMail(u.email, 'user');
+        const success = new Message(`L'utilisateur ${u.lastname} ${u.firstname} a bien été banni`)
+        return Response.sendResponse(success, 200);
+
     }
 
     /**

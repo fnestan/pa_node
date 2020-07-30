@@ -2,6 +2,8 @@ const bodyParser = require('body-parser');
 const UserController = require('../controllers').UserController;
 const AuthMiddleware = require('../middlewares/auth.middleware');
 const Verification = require('../helpers').VerificationHelper;
+const Message = require("../helpers/errormessage");
+
 
 
 module.exports = function (app) {
@@ -10,11 +12,11 @@ module.exports = function (app) {
      */
     app.get("/user/ban/:idUser", AuthMiddleware.isAdmin(),async (req, res) => {
         try {
-            const user = await UserController.banUser(+req.params.idUser);
-            res.status(200).json(user);
+            const response = await UserController.banUser(+req.params.idUser);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            console.log(err)
-            res.status(409).json(err);
+            const message = new Message(err);
+            res.status(409).json(message);
         }
     });
 
