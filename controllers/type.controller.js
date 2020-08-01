@@ -1,10 +1,11 @@
 const models = require('../models');
+const Response = require('../helpers/response');
 const Type = models.Type;
 
 class TypeController {
 
-     static getAllTypes(){
-        return Type.findAll();
+    static getAllTypes() {
+        return Response.sendResponse(Type.findAll(), 200);
     }
 }
 

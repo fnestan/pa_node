@@ -39,7 +39,7 @@ class UserController {
      *
      * @param userId
      * @param response
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async validateVolunteer(userId, response) {
         let RoleId = 2;
@@ -51,21 +51,22 @@ class UserController {
                 id: userId
             }
         });
-        return user;
+        return Response.sendResponse(user, 200);
     }
 
     static async validateUser(userId, response) {
         let active = true;
         if (response === "REFUSE") {
             active = false;
+            this.banUser(userId);
         }
         const user = await User.update({validateUser: response, active: active}, {
             where: {
                 id: userId
             }
         });
-        this.banUser()
-        return user;
+        return Response.sendResponse(new Message(`Vous avez ${response.toLowerCase()} l'utilisateur ${user.lastname}
+         ${user.firstname}`), 200);
     }
 
     static async reportUser(idAnnex, idUser) {
@@ -86,16 +87,16 @@ class UserController {
                 user: user
             });
             if (reportExist) {
-                return "Vous avez déjà reporter " + user.firstname + " " + user.lastname;
+                return Response.sendResponse(new Message(`Vous avez déjà reporté ${user.firstname}  ${user.lastname}`), 200)
             }
             const report = await Report.create({
                 reporter: "annex"
             });
             report.setAnnex(annex);
             report.setUser(user);
-            return "Vous venez de reporter l'utilisateur " + user.firstname + " " + user.lastname;
+            return Response.sendResponse(new Message(`Vous venez de reporter l'utilisateur ${user.firstname}  ${user.lastname}`), 200)
         }
-        return "Vous ne pouvez pas reporter l'utilisateur ";
+        return Response.sendResponse(new Message("Vous ne pouvez pas reporter cet utilisateur"), 200)
     }
 
     static async updateUser(validForVolunteer, login, firstname, email, lastname, street, zipCode, city, phone, roleId, birthdate, idUser) {
@@ -113,18 +114,18 @@ class UserController {
                 id: idUser
             }
         });
-        return User.findOne({
+        return Response.sendResponse(User.findOne({
             where: {
                 id: idUser
             }
-        });
+        }), 200);
     }
 
 
     /**
      * @param idUser
      * @param idService
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async answerService(idUser, idService) {
         const service = await Service.findOne({
@@ -139,7 +140,7 @@ class UserController {
         });
         if (user) {
             if (user.RoleId === 1) {
-                return {message: "Vous n'avez pas le droit de répondre aà un service"}
+                return Response.sendResponse(new Message("Vous n'avez pas le droit de répondre aà un service"), 200)
             }
             service.addUser(user)
         }
@@ -147,17 +148,17 @@ class UserController {
     }
 
     static async getAllUsers() {
-        return User.findAll({
+        return Response.sendResponse(User.findAll({
             include: Role
-        });
+        }), 200);
     }
 
     static async getCurrentUser(userFromTOken) {
-        return User.findOne({
+        return Response.sendResponse(User.findOne({
             where: {
                 id: userFromTOken.id
             }
-        });
+        }), 200);
     }
 
     static async getHomeAnnex(user) {
@@ -178,7 +179,8 @@ class UserController {
         const pendingServices = [];
         pendingServices.push(...await this.getPendingServices(user.id));
         pendingDonations.push(...await this.getPendingDonation(user.id));
-        return {helpedAnnexes: helpedAnnexes, pendingDonations: pendingDonations, pendingServices: pendingServices}
+        return Response.sendResponse({helpedAnnexes: helpedAnnexes, pendingDonations: pendingDonations,
+            pendingServices: pendingServices},200)
     }
 
     static async getAnnexHelpedByServices(idUser) {

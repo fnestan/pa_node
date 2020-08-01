@@ -5,17 +5,16 @@ const Verification = require('../helpers').VerificationHelper;
 const Message = require("../helpers/errormessage");
 
 
-
 module.exports = function (app) {
     /**
      *
      */
-    app.get("/user/ban/:idUser", AuthMiddleware.isAdmin(),async (req, res) => {
+    app.get("/user/ban/:idUser", AuthMiddleware.isAdmin(), async (req, res) => {
         try {
             const response = await UserController.banUser(+req.params.idUser);
             res.status(response[1]).json(response[0]);
         } catch (err) {
-            const message = new Message(err);
+            const message = new Message(err.toString());
             res.status(409).json(message);
         }
     });
@@ -26,9 +25,10 @@ module.exports = function (app) {
     app.put("/user/validateVolunter/:idUser", AuthMiddleware.isAdmin(), async (req, res) => {
         try {
             const user = await UserController.validateVolunteer(+req.params.idUser, req.body.valide);
-            res.status(200).json(user);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
+            const message = new Message(err.toString());
+            res.status(409).json(message);
         }
     });
 
@@ -38,19 +38,20 @@ module.exports = function (app) {
     app.put("/user/validateUser/:idUser", AuthMiddleware.isAdmin(), async (req, res) => {
         try {
             const user = await UserController.validateUser(+req.params.idUser, req.body.valide);
-            res.status(200).json(user);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
+            const message = new Message(err.toString());
+            res.status(409).json(message);
         }
     });
 
     app.get('/user/report/:idUser/:idAnnex', AuthMiddleware.isManager(), async (req, res) => {
         try {
             const response = await UserController.reportUser(req.params.idAnnex, req.params.idUser);
-            res.status(200).json(response);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            console.log(err)
-            res.status(409).json(err);
+            const message = new Message(err.toString());
+            res.status(409).json(message);
         }
     });
 
@@ -59,10 +60,10 @@ module.exports = function (app) {
             const authorization = req.headers['authorization'];
             const userFromTOken = await Verification.userFromToken(authorization.split(" ")[1]);
             const response = await UserController.getCurrentUser(userFromTOken);
-            res.status(200).json(response);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            console.log(err)
-            res.status(409).json(err);
+            const message = new Message(err.toString());
+            res.status(409).json(message);
         }
     });
 
@@ -79,7 +80,8 @@ module.exports = function (app) {
             const userFromTOken = await Verification.userFromToken(authorization.split(" ")[1]);
             if (userFromTOken && userfromId) {
                 if (userFromTOken.id !== userfromId.id && userFromTOken.RoleId !== 3) {
-                    res.status(200).json("nope");
+                    const message = new Message(err.toString());
+                    res.status(200).json(message);
                     return;
                 }
             }
@@ -100,11 +102,13 @@ module.exports = function (app) {
             let validForVolunteer = null;
             if (userfromId.RoleId == 1 && roleId == 2) {
                 if (userfromId.validForVolunteer === "REFUSE") {
-                    res.status(400).json("Vous ne pouvez pas être bénévole");
+                    const message = new Message("Vous ne pouvez pas être bénévole");
+                    res.status(400).json(message);
                     return;
                 }
                 if (userfromId.validForVolunteer === "ATTENTE") {
-                    res.status(400).json("Votre validation est en attente");
+                    const message = new Message("Votre validation est en attente");
+                    res.status(400).json(message);
                     return;
                 }
                 roleId = roleId;
@@ -125,46 +129,42 @@ module.exports = function (app) {
             }
 
             const response = await UserController.updateUser(validForVolunteer, login, firstname, email, lastname, street, zipCode, city, phone, roleId, birthdate, req.params.idUser);
-            res.status(200).json(response);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            console.log(err)
-            res.status(409).json(err);
+            const message = new Message(err.toString());
+            res.status(409).json(message);
         }
     });
 
-    app.get("/user/:idUser/answer/service/:idService", AuthMiddleware.isVolunteer(), async(req, res) =>{
+    app.get("/user/:idUser/answer/service/:idService", AuthMiddleware.isVolunteer(), async (req, res) => {
         try {
-            const service = await UserController.answerService(req.params.idUser, req.params.idService);
-           if (service.message){
-               res.status(400).json(service.message);
-           } else {
-               res.status(200).json(service);
-           }
+            const response = await UserController.answerService(req.params.idUser, req.params.idService);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            console.log(err);
-            res.status(409).json(err);
+            const message = new Message(err.toString());
+            res.status(409).json(message);
         }
     });
 
-    app.get("/user/get/all", AuthMiddleware.isAdmin(), async(req, res) =>{
+    app.get("/user/get/all", AuthMiddleware.isAdmin(), async (req, res) => {
         try {
-            const users = await UserController.getAllUsers();
-            res.status(200).json(users);
+            const response = await UserController.getAllUsers();
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            console.log(err);
-            res.status(409).json(err);
+            const message = new Message(err.toString());
+            res.status(409).json(message);
         }
     });
 
-    app.get("/user/get/AllActions", AuthMiddleware.auth(), async(req, res) =>{
+    app.get("/user/get/AllActions", AuthMiddleware.auth(), async (req, res) => {
         try {
             const authorization = req.headers['authorization'];
             const userFromTOken = await Verification.userFromToken(authorization.split(" ")[1]);
-            const actions = await UserController.getHomeAnnex(userFromTOken);
-            res.status(200).json(actions);
+            const response = await UserController.getHomeAnnex(userFromTOken);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            console.log(err);
-            res.status(409).json(err);
+            const message = new Message(err.toString());
+            res.status(409).json(message);
         }
     });
 };
