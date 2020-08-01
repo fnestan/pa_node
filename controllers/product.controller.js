@@ -1,11 +1,9 @@
 const Sequelize = require('sequelize');
 const op = Sequelize.Op;
-const operatorsAliases = {
-    $eq: op.eq,
-    $or: op.or,
-}
 const models = require('../models');
 const Product = models.Product;
+const Message = require('../helpers/errormessage');
+const Response = require('../helpers/response.js');
 
 
 class ProductController {
@@ -13,27 +11,27 @@ class ProductController {
     /**
      * @param id
      * @param name
-     * @returns {Promise<Product>}
+     * @returns {[*, *]}
      */
     static create(id, name) {
-        return Product.create({
+        return Response.sendResponse(Product.create({
             TypeId: id,
             name
-        });
+        }), 201);
     }
 
     /**
      * @param name
-     * @returns {Promise<Product>}
+     * @returns {[*, *]}
      */
     static searchProduct(name) {
-        return Product.findAll({
+        return Response.sendResponse(Product.findAll({
             where: {
                 name: {
-                    [op.like]: name+'%'
+                    [op.like]: name + '%'
                 }
             }
-        })
+        }), 200);
     }
 
     /**
@@ -41,12 +39,13 @@ class ProductController {
      * @param productId
      * @returns {Promise<void>}
      */
-    static async banProduct(productId) {
-        return Product.update({active: false}, {
+    static async deleteProduct(productId) {
+        const product = await Product.update({active: false}, {
             where: {
                 id: productId
             }
         });
+        return Response.sendResponse(new Message("Le produit a bien été supprimé"), 200)
     }
 }
 
