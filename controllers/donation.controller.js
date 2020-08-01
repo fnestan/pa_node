@@ -74,12 +74,12 @@ class DonationController {
     static async getDonationList(idAnnex, user) {
         const role = user.getRole();
         if (role.id === 4) {
-            return Donation.findAll({
+            return Response.sendResponse(Donation.findAll({
                 where: {
                     AnnexId: idAnnex,
                     active: true
                 }
-            });
+            }), 200);
         }
         return Response.sendResponse(Donation.findAll({
             where: {
