@@ -10,10 +10,8 @@ const Report = models.Report;
 const Service = models.Service;
 const Sequelize = require('sequelize');
 const op = Sequelize.Op;
-const operatorsAliases = {
-    $eq: op.eq,
-    $or: op.or,
-};
+const Response = require('../helpers/response');
+const Message = require('../helpers/errormessage');
 
 class AnnexController {
 
@@ -25,7 +23,7 @@ class AnnexController {
      * @param city
      * @param phone
      * @param associationId
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async createAnnex(name, description, email, street, zipCode, city, phone, associationId, horaire, user) {
 
@@ -62,13 +60,14 @@ class AnnexController {
                 await annexAvailability.setAnnex(annex);
             }
         }
-        return annex;
+        await MailService.sendMail(ann.email, "Création", "Votre inscription  bien été enregistrer. Vous devez attendre la validation de l'administrateur")
+        return Response.sendResponse(annex, 201);
     }
 
     /**
      *
      * @param annexId
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async banAnnex(annexId) {
 
@@ -77,13 +76,25 @@ class AnnexController {
                 id: annexId
             }
         });
-        return annex;
+        if (+annex === 1) {
+            const ann = await Annex.findOne({
+                where: {
+                    id: annexId
+                }
+            });
+            await MailService.sendMail(ann.email, "Bannissement", "Nous somme au regret de vous annoncer que cette annex a été banni.\n " +
+                "Pour plus d'information veullez contacter l'administrateur.")
+            const message = new Message(`L'annexe à bien été banni`);
+            return Response.sendResponse(message, 200);
+        }
+        const message = new Message(`Cette annexe n'existe pas`);
+        return Response.sendResponse(message, 400);
     }
 
     /**
      *
      * @param annexId
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async validateAnnex(annexId) {
         const annexSearch = await Annex.findOne({
@@ -91,20 +102,26 @@ class AnnexController {
                 id: annexId
             }
         });
-        const role = await Role.findOne({
-            where: {
-                id: 4
+        if (annexSearch) {
+            const role = await Role.findOne({
+                where: {
+                    id: 4
+                }
+            });
+            const users = await annexSearch.getUsers();
+            for (let i = 0; i < users.length; i++) {
+                await users[i].setRole(role);
             }
-        });
-        const users = await annexSearch.getUsers();
-        for (let i = 0; i < users.length; i++) {
-            await users[i].setRole(role);
+            const annex = await Annex.update({valid: true}, {
+                where: {
+                    id: annexId
+                }
+            });
+            await MailService.sendMail(annexSearch.email, "Inscription Validée", "Nous avons le plaisir de vous annoncer que l'inscription de votre annexe a été accetée.")
+            const message = new Message(`L'annexe à bien été Validée`);
+            return Response.sendResponse(message, 200);
         }
-        const annex = await Annex.update({valid: true}, {
-            where: {
-                id: annexId
-            }
-        });
+
     }
 
     /**
@@ -112,14 +129,13 @@ class AnnexController {
      * @param annexId
      * @param horaire
      * @param user
-     * @returns {Promise<Credential>}
+     * @returns {Promise<[*, *]>}
      */
     static async createAvailability(annexId, horaire, user) {
-
-        // verifier sir le mec est le gerant pour l'annex
         const annex = await Annex.findOne({
             where: {
-                id: annexId
+                id: annexId,
+                valid: true
             }
         });
         const users = await annex.getUsers();
@@ -144,7 +160,7 @@ class AnnexController {
             }
             return annex;
         }
-        return "Vous n'avez pas le droit créer des disponibilité pour cette Annexe";
+        return Response.sendResponse(new Message("Vous n'avez pas le droit d'effectuer cette action"), 401);
     }
 
     /**
@@ -160,7 +176,9 @@ class AnnexController {
 
         const annex = await Annex.findOne({
             where: {
-                id: idAnnex
+                id: idAnnex,
+                valid: true,
+                active: true
             }
         });
         const users = await annex.getUsers();
@@ -173,9 +191,26 @@ class AnnexController {
                 }
             });
 
-            return h;
+            return Response.sendResponse(new Message("L'annexe à bien été modifiée"), 200);
         }
-        return "Vous n'avez pas le droit modifier des disponibilité pour cette Annexe"
+        return Response.sendResponse(new Message("Vous n'avez pas le droit de modifier des disponibilité pour cette Annexe"), 401)
+    }
+
+    static async deleteAvailable(idavailability, user) {
+        const availability = await AnnexAvailability.findOne({
+            where: {
+                id: idavailability
+            }
+        });
+        const annex = await availability.getAnnex(availability.AnnexId)
+        const users = await annex.getUsers();
+        const u = users.find(element => element.id === user.id);
+        const role = await user.getRole();
+        if (u || role.id === 3) {
+            await annex.destroy();
+            return Response.sendResponse(new Message("L'annexe à bien été supprimé"), 200);
+        }
+        return Response.sendResponse(new Message("Vous n'avez pas le droit de supprimer des disponibilité pour cette Annexe"), 401)
     }
 
     /**
@@ -183,12 +218,14 @@ class AnnexController {
      * @param idAnnex
      * @param email
      * @param user
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async addManager(idAnnex, email, user) {
         const annex = await Annex.findOne({
             where: {
-                id: idAnnex
+                id: idAnnex,
+                active: true,
+                valid: true
             }
         });
         const users = await annex.getUsers();
@@ -197,24 +234,27 @@ class AnnexController {
         if (u || role.id === 3) {
             const manager = await User.findOne({
                 where: {
-                    email: email
+                    email: email,
+                    valideForUser: "ACCEPTE"
                 }
             });
             if (manager) {
                 await manager.setRole(role);
                 await manager.save();
                 await annex.addUser(manager);
-                return "Le manager à bien été ajouter";
+                return Response.sendResponse(new Message("Le manager à bien été ajouter"), 200);
             }
-            return "Cet utilisateur n'existe pas";
+            return Response.sendResponse(new Message("Cet utilisateur n'existe pas"), 400);
         }
-        return "Vous n'avez pas le droit d'ajouter des gérant pour cette Annexe"
+        return Response.sendResponse(new Message("Vous n'avez pas le droit d'ajouter des gérant pour cette Annexe"), 401);
     }
 
     static async removeManager(idAnnex, idUser, user) {
         const annex = await Annex.findOne({
             where: {
-                id: idAnnex
+                id: idAnnex,
+                valid: true,
+                active: true
             }
         });
         const users = await annex.getUsers();
@@ -228,24 +268,24 @@ class AnnexController {
             });
             if (manager) {
                 annex.removeUser(manager);
-                return "Le manager à bien été supprimer";
+                return Response.sendResponse(new Message("Le manager à bien été supprimer"), 200);
             }
-            return "Cet utilisateur n'existe pas";
+            return Response.sendResponse(new Message("Cet utilisateur n'existe pas"), 400);
         }
-        return "Vous n'avez pas le droit de supprimer pour cette Annexe"
+        return Response.sendResponse(new Message("Vous n'avez pas le droit de supprimer pour cette Annexe"), 401);
+
     }
 
     static async getMyAnnexes(user) {
-
         const annexList = await user.getAnnexes();
         console.log(annexList);
-        return annexList.filter(annex => annex.active)
+        return Response.sendResponse(annexList.filter(annex => annex.active), 200);
     }
 
     /**
      *
      * @param id
-     * @returns {Promise<any>}
+     * @returns {Promise<[*, *]>}
      */
     static async getAnnexByAId(id) {
         let annex = await Annex.findOne({
@@ -259,19 +299,25 @@ class AnnexController {
                 active: true
             }
         });
-        return annex;
+        if (annex) {
+            return Response.sendResponse(annex, 200);
+        }
+        const message = new Message("Cette Annex n'existe pas")
+        return Response.sendResponse(message, 400)
     }
 
     /**
      *
      * @param user
      * @param id
-     * @returns {Promise<string>}
+     * @returns {Promise<[*, *]>}
      */
     static async reportAnnex(user, id) {
         let annex = await Annex.findOne({
             where: {
                 id: id,
+                valid: true,
+                active: true
             }
         });
         if (annex) {
@@ -281,16 +327,16 @@ class AnnexController {
                 user: user
             });
             if (reportExist) {
-                return "Vous avez déjà reporter " + annex.name;
+                return Response.sendResponse(new Message("Vous avez déjà reporter " + annex.name), 400);
             }
             const report = await Report.create({
                 reporter: "user"
             });
             report.setAnnex(annex);
             report.setUser(user);
-            return "Vous venez reporter l'annexe " + annex.name;
+            return Response.sendResponse(new Message("Vous venez reporter l'annexe " + annex.name), 200);
         }
-        return "Vous ne pouvez pas reporter l'annexe ";
+        return Response.sendResponse(new Message("Vous ne pouvez pas reporter l'annexe, elle n'existe pas"), 400);
 
     }
 
@@ -299,6 +345,8 @@ class AnnexController {
         let annex = await Annex.findOne({
             where: {
                 id: id,
+                valid: true,
+                active: true
             }
         });
         const userManageers = await annex.getUsers();
@@ -315,22 +363,30 @@ class AnnexController {
             }, {
                 where: {
                     id: id,
+                    valid: true,
+                    active: true
                 }
             });
-            return annexUpdate;
+            return Response.sendResponse(annexUpdate, 200);
         }
-        return "Vous n'êtes pas manager de cette annexe"
+        return Response.sendResponse(new Message("Vous n'êtes pas manager de cette annexe"), 403)
     }
 
+    /**
+     *
+     * @param name
+     * @returns {Promise<*>}
+     */
     static async searchAnnex(name) {
-        return Annex.findAll({
+        return Response.sendResponse(Annex.findAll({
             where: {
                 name: {
                     [op.like]: name + '%',
                 },
+                valid: true,
                 active: true
             }
-        })
+        }), 200);
     }
 }
 

@@ -57,7 +57,8 @@ class AuthController {
 
         });
         await user.setRole(role);
-        const contenu = "Bonjour \n Bienvenue  sur Connexion Association, la plateforme qui met en contact Association et particulier"
+        const contenu = "Bonjour \n Bienvenue  sur Connexion Association, la plateforme qui met en contact Association et particulier. \n" +
+            "Vous devez attendre la validation de l'administrateur"
         await MailService.sendMail(email, "Bienvenue", contenu);
         return Response.sendResponse(user, 201);
     }

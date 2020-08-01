@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser');
 const AnnexController = require('../controllers').AnnexController;
 const Verification = require('../helpers').VerificationHelper;
+const Message = require('../helpers').ErrorMessage;
 const AuthMiddleware = require('../middlewares/auth.middleware');
 
 
@@ -12,11 +13,11 @@ module.exports = function (app) {
      */
     app.get("/annex/getannex/:id", async (req, res) => {
         try {
-            const annex = await AnnexController.getAnnexByAId(req.params.id);
-            res.status(200).json(annex);
+            const response = await AnnexController.getAnnexByAId(req.params.id);
+            res.status(response[1]).json(response[0]);
         } catch (e) {
-            console.log(e)
-            res.status(400).json(e)
+            const message = new Message(e.toString());
+            res.status(400).json(message)
         }
     });
 
@@ -67,10 +68,11 @@ module.exports = function (app) {
         try {
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const annex = await AnnexController.createAnnex(name, description, email, street, zipCode, city, phone, associationId, horaires, user);
-            res.status(201).json(annex);
+            const response = await AnnexController.createAnnex(name, description, email, street, zipCode, city, phone, associationId, horaires, user);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
+            const message = new Message(err.toString());
+            res.status(409).json(message);
         }
     });
 
@@ -79,10 +81,10 @@ module.exports = function (app) {
      */
     app.get("/annex/ban/:idAnnex", AuthMiddleware.isAdmin(), async (req, res) => {
         try {
-            const annex = await AnnexController.banAnnex(+req.params.idAnnex);
-            res.status(200).json(annex);
+            const response = await AnnexController.banAnnex(+req.params.idAnnex);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
 
@@ -91,10 +93,10 @@ module.exports = function (app) {
      */
     app.put("/annex/validate/:idAnnex", AuthMiddleware.isAdmin(), async (req, res) => {
         try {
-            const annex = await AnnexController.validateAnnex(+req.params.idAnnex);
-            res.status(200).json(annex);
+            const response = await AnnexController.validateAnnex(+req.params.idAnnex);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
     app.post("/annex/availability/create/:idAnnex", bodyParser.json(), AuthMiddleware.isManager(), async (req, res) => {
@@ -102,10 +104,10 @@ module.exports = function (app) {
             const {horaires} = req.body;
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const annex = await AnnexController.createAvailability(+req.params.idAnnex, horaires, user);
-            res.status(200).json(annex);
+            const response = await AnnexController.createAvailability(+req.params.idAnnex, horaires, user);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
+            res.status(409).json(new Message(err.toString()));
             console.log(err);
         }
     });
@@ -115,11 +117,22 @@ module.exports = function (app) {
             const {openingTime, closingTime} = req.body;
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const annex = await AnnexController.updateAvailability(+req.params.idAnnex, +req.params.idavailability, openingTime, closingTime, user);
-            res.status(200).json(annex);
+            const response = await AnnexController.updateAvailability(+req.params.idAnnex, +req.params.idavailability, openingTime, closingTime, user);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
-            console.log(err);
+            res.status(409).json(new Message(err.toString()));
+        }
+    });
+
+
+    app.delete("/annex/deleteAvailable/:idAvailable", bodyParser.json(), AuthMiddleware.isManager(), async (req, res) => {
+        try {
+            const authorization = req.headers['authorization'];
+            const user = await Verification.userFromToken(authorization.split(" ")[1]);
+            const response = await AnnexController.deleteAvailable(+req.params.idAvailable, user);
+            res.status(response[1]).json(response[0]);
+        } catch (err) {
+            res.status(409).json(new Message(err.toString()));
         }
     });
 
@@ -129,11 +142,10 @@ module.exports = function (app) {
             const authorization = req.headers['authorization'];
             console.log(authorization)
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const annex = await AnnexController.addManager(+req.params.idAnnex, email, user);
-            res.status(200).json(annex);
+            const response = await AnnexController.addManager(+req.params.idAnnex, email, user);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
-            console.log(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
 
@@ -141,11 +153,10 @@ module.exports = function (app) {
         try {
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const annex = await AnnexController.removeManager(+req.params.idAnnex, +req.params.idUser, user);
-            res.status(200).json(annex);
+            const response = await AnnexController.removeManager(+req.params.idAnnex, +req.params.idUser, user);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
-            console.log(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
     /**
@@ -155,21 +166,20 @@ module.exports = function (app) {
         try {
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const annex = await AnnexController.getMyAnnexes(user);
-            res.status(201).json(annex);
+            const response = await AnnexController.getMyAnnexes(user);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
     app.get('/annex/report/:id', AuthMiddleware.auth(), async (req, res) => {
         try {
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const annex = await AnnexController.reportAnnex(user, req.params.id);
-            res.status(201).json(annex);
+            const response = await AnnexController.reportAnnex(user, req.params.id);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            console.log(err)
-            res.status(409).json(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
 
@@ -182,24 +192,24 @@ module.exports = function (app) {
         try {
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const annex = await AnnexController.updateAnnex(name, description, email, street, zipCode, city, phone, user, req.params.id);
-            res.status(201).json(annex);
+            const response = await AnnexController.updateAnnex(name, description, email, street, zipCode, city, phone, user, req.params.id);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
             console.log(err)
-            res.status(409).json(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
 
-    app.post('/annex/searchAnnex', bodyParser.json(), async  (req, res) => {
-        if(req.body.name) {
+    app.post('/annex/searchAnnex', bodyParser.json(), async (req, res) => {
+        if (req.body.name) {
             try {
-                const AnnexList = await AnnexController.searchAnnex(req.body.name);
-                res.status(201).json(AnnexList);
+                const response = await AnnexController.searchAnnex(req.body.name);
+                res.status(response[1]).json(response[0]);
             } catch (err) {
-                res.status(409).end();
+                res.status(409).json(new Message(err.toString()));
             }
         } else {
-            res.status(400).end();
+            res.status(400).json(new Message("veuillez renseignez un nom"));
         }
     });
 };
