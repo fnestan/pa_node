@@ -33,7 +33,7 @@ class AssociationController {
             limit: 10,
             offset: element
         })
-        return Response.sendResponse({count: va, data: data}, 200);
+        return Response.sendResponse(await {count: va, data: data}, 200);
     }
 
     static async getAllAssociationByName(page, name) {
@@ -56,11 +56,11 @@ class AssociationController {
             limit: 10,
             offset: element
         });
-        return Response.sendResponse({count: va, data: data}, 200);
+        return Response.sendResponse( {count: va, data: data}, 200);
     }
 
     static async getAssociationById(id) {
-        return Response.sendResponse(Association.findOne({
+        return Response.sendResponse(await Association.findOne({
             include: {
                 model: Annex
             },

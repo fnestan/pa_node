@@ -41,7 +41,7 @@ class DonationController {
             }
         }
         newDonation.setAnnex(idAnnex);
-        return Response.sendResponse(newDonation, 201);
+        return Response.sendResponse(await newDonation, 201);
     }
 
 
@@ -51,7 +51,7 @@ class DonationController {
      * @returns {Promise<[*, *]>}
      */
     static async completeDonation(idDonation, quantityDonation) {
-        return Response.sendResponse(await Donation.update({status: true}, {
+        return Response.sendResponse(await await Donation.update({status: true}, {
             where: {
                 id: idDonation,
                 quantity: quantityDonation
@@ -64,7 +64,7 @@ class DonationController {
      * @returns {Promise<[*, *]>}
      */
     static async deleteDonation(idDonation) {
-        return Response.sendResponse(Donation.update({actif: false}, {
+        return Response.sendResponse(await Donation.update({actif: false}, {
             where: {
                 id: idDonation
             }
@@ -72,16 +72,16 @@ class DonationController {
     }
 
     static async getDonationList(idAnnex, user) {
-        const role = user.getRole();
+        const role = await user.getRole();
         if (role.id === 4) {
-            return Response.sendResponse(Donation.findAll({
+            return Response.sendResponse(await await Donation.findAll({
                 where: {
                     AnnexId: idAnnex,
-                    active: true
+                    actif: true
                 }
             }), 200);
         }
-        return Response.sendResponse(Donation.findAll({
+        return Response.sendResponse(await await Donation.findAll({
             where: {
                 AnnexId: idAnnex
             }
@@ -89,7 +89,7 @@ class DonationController {
     }
 
     static async getDonationById(idDonation) {
-        return Response.sendResponse(Donation.findOne({
+        return Response.sendResponse(await Donation.findOne({
             include: [{
                 model: Requerir,
                 include: {
@@ -123,7 +123,7 @@ class DonationController {
                 }
             });
         }
-        return Response.sendResponse(new Message("Votre donation a bien été enregistré"), 200);
+        return Response.sendResponse(await new Message("Votre donation a bien été enregistré"), 200);
     }
 
     static async getPastDonations(user) {
@@ -153,7 +153,7 @@ class DonationController {
                 response.push(don)
             }
         }
-        return Response.sendResponse({donationHistory: response}, 200);
+        return Response.sendResponse(await {donationHistory: response}, 200);
     }
 }
 

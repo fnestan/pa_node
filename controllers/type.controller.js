@@ -5,7 +5,7 @@ const Type = models.Type;
 class TypeController {
 
     static getAllTypes() {
-        return Response.sendResponse(Type.findAll(), 200);
+        return Response.sendResponse(await Type.findAll(), 200);
     }
 }
 

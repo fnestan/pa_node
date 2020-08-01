@@ -31,7 +31,7 @@ class UserController {
         });
         await MailService.sendMail(u.email, 'user');
         const success = new Message(`L'utilisateur ${u.lastname} ${u.firstname} a bien été banni`)
-        return Response.sendResponse(success, 200);
+        return Response.sendResponse(await success, 200);
 
     }
 
@@ -51,7 +51,7 @@ class UserController {
                 id: userId
             }
         });
-        return Response.sendResponse(user, 200);
+        return Response.sendResponse(await user, 200);
     }
 
     static async validateUser(userId, response) {
@@ -65,7 +65,7 @@ class UserController {
                 id: userId
             }
         });
-        return Response.sendResponse(new Message(`Vous avez ${response.toLowerCase()} l'utilisateur ${user.lastname}
+        return Response.sendResponse(await new Message(`Vous avez ${response.toLowerCase()} l'utilisateur ${user.lastname}
          ${user.firstname}`), 200);
     }
 
@@ -87,16 +87,16 @@ class UserController {
                 user: user
             });
             if (reportExist) {
-                return Response.sendResponse(new Message(`Vous avez déjà reporté ${user.firstname}  ${user.lastname}`), 200)
+                return Response.sendResponse(await new Message(`Vous avez déjà reporté ${user.firstname}  ${user.lastname}`), 200)
             }
             const report = await Report.create({
                 reporter: "annex"
             });
             report.setAnnex(annex);
             report.setUser(user);
-            return Response.sendResponse(new Message(`Vous venez de reporter l'utilisateur ${user.firstname}  ${user.lastname}`), 200)
+            return Response.sendResponse(await new Message(`Vous venez de reporter l'utilisateur ${user.firstname}  ${user.lastname}`), 200)
         }
-        return Response.sendResponse(new Message("Vous ne pouvez pas reporter cet utilisateur"), 200)
+        return Response.sendResponse(await new Message("Vous ne pouvez pas reporter cet utilisateur"), 200)
     }
 
     static async updateUser(validForVolunteer, login, firstname, email, lastname, street, zipCode, city, phone, roleId, birthdate, idUser) {
@@ -114,7 +114,7 @@ class UserController {
                 id: idUser
             }
         });
-        return Response.sendResponse(User.findOne({
+        return Response.sendResponse(await User.findOne({
             where: {
                 id: idUser
             }
@@ -140,7 +140,7 @@ class UserController {
         });
         if (user) {
             if (user.RoleId === 1) {
-                return Response.sendResponse(new Message("Vous n'avez pas le droit de répondre aà un service"), 200)
+                return Response.sendResponse(await new Message("Vous n'avez pas le droit de répondre aà un service"), 200)
             }
             service.addUser(user)
         }
@@ -148,13 +148,13 @@ class UserController {
     }
 
     static async getAllUsers() {
-        return Response.sendResponse(User.findAll({
+        return Response.sendResponse(await User.findAll({
             include: Role
         }), 200);
     }
 
     static async getCurrentUser(userFromTOken) {
-        return Response.sendResponse(User.findOne({
+        return Response.sendResponse(await User.findOne({
             where: {
                 id: userFromTOken.id
             }
@@ -179,7 +179,7 @@ class UserController {
         const pendingServices = [];
         pendingServices.push(...await this.getPendingServices(user.id));
         pendingDonations.push(...await this.getPendingDonation(user.id));
-        return Response.sendResponse({helpedAnnexes: helpedAnnexes, pendingDonations: pendingDonations,
+        return Response.sendResponse(await {helpedAnnexes: helpedAnnexes, pendingDonations: pendingDonations,
             pendingServices: pendingServices},200)
     }
 

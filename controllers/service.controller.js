@@ -25,11 +25,11 @@ class ServiceController {
         });
         if (user) {
             if (user.RoleId === 1) {
-                return Response.sendResponse(new Message("Vous n'avez pas le droit de réponde à un service en tant que donateur"), 401)
+                return Response.sendResponse(await new Message("Vous n'avez pas le droit de réponde à un service en tant que donateur"), 401)
             }
         }
         service.addUser(user);
-        return Response.sendResponse(service, 200);
+        return Response.sendResponse(await service, 200);
     }
 
     /**
@@ -50,7 +50,7 @@ class ServiceController {
             actif: true
         });
         newService.setAnnex(idAnnex);
-        return Response.sendResponse(newService, 200);
+        return Response.sendResponse(await newService, 200);
     }
 
     /**
@@ -63,7 +63,7 @@ class ServiceController {
                 id: idService
             }
         });
-        return Response.sendResponse(new Message("Le service vient d'être complété"), 200)
+        return Response.sendResponse(await new Message("Le service vient d'être complété"), 200)
     }
 
     /**
@@ -76,7 +76,7 @@ class ServiceController {
                 id: idService
             }
         });
-        return Response.sendResponse(service, 200);
+        return Response.sendResponse(await service, 200);
     }
 
 
@@ -96,7 +96,7 @@ class ServiceController {
                 }
             });
         }
-        return Response.sendResponse(Service.findAll({
+        return Response.sendResponse(await Service.findAll({
             where: {
                 AnnexId: idAnnex
             }
@@ -124,7 +124,7 @@ class ServiceController {
         } else {
             isAnswer = false
         }
-        return Response.sendResponse({service: service, isAnswer: isAnswer}, 200);
+        return Response.sendResponse(await {service: service, isAnswer: isAnswer}, 200);
     }
 
     static async getPastServices(user) {
@@ -142,7 +142,7 @@ class ServiceController {
                 myServices.push(service);
             }
         }
-        return Response.sendResponse(myServices, 200);
+        return Response.sendResponse(await myServices, 200);
     }
 
 }

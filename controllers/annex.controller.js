@@ -61,7 +61,7 @@ class AnnexController {
             }
         }
         await MailService.sendMail(ann.email, "Création", "Votre inscription  bien été enregistrer. Vous devez attendre la validation de l'administrateur")
-        return Response.sendResponse(annex, 201);
+        return Response.sendResponse(await await annex, 201);
     }
 
     /**
@@ -92,7 +92,7 @@ class AnnexController {
             });
             await MailService.sendMail(annexSearch.email, "Inscription Validée", "Nous avons le plaisir de vous annoncer que l'inscription de votre annexe a été accetée.")
             const message = new Message(`L'annexe à bien été Validée`);
-            return Response.sendResponse(message, 200);
+            return Response.sendResponse(await await message, 200);
         }
 
     }
@@ -133,7 +133,7 @@ class AnnexController {
             }
             return annex;
         }
-        return Response.sendResponse(new Message("Vous n'avez pas le droit d'effectuer cette action"), 401);
+        return Response.sendResponse(await await new Message("Vous n'avez pas le droit d'effectuer cette action"), 401);
     }
 
     /**
@@ -164,9 +164,9 @@ class AnnexController {
                 }
             });
 
-            return Response.sendResponse(new Message("L'annexe à bien été modifiée"), 200);
+            return Response.sendResponse(await await new Message("L'annexe à bien été modifiée"), 200);
         }
-        return Response.sendResponse(new Message("Vous n'avez pas le droit de modifier des disponibilité pour cette Annexe"), 401)
+        return Response.sendResponse(await await new Message("Vous n'avez pas le droit de modifier des disponibilité pour cette Annexe"), 401)
     }
 
     static async deleteAvailable(idavailability, user) {
@@ -181,9 +181,9 @@ class AnnexController {
         const role = await user.getRole();
         if (u || role.id === 3) {
             await annex.destroy();
-            return Response.sendResponse(new Message("L'annexe à bien été supprimé"), 200);
+            return Response.sendResponse(await await new Message("L'annexe à bien été supprimé"), 200);
         }
-        return Response.sendResponse(new Message("Vous n'avez pas le droit de supprimer des disponibilité pour cette Annexe"), 401)
+        return Response.sendResponse(await await new Message("Vous n'avez pas le droit de supprimer des disponibilité pour cette Annexe"), 401)
     }
 
     /**
@@ -215,11 +215,11 @@ class AnnexController {
                 await manager.setRole(role);
                 await manager.save();
                 await annex.addUser(manager);
-                return Response.sendResponse(new Message("Le manager à bien été ajouter"), 200);
+                return Response.sendResponse(await await new Message("Le manager à bien été ajouter"), 200);
             }
-            return Response.sendResponse(new Message("Cet utilisateur n'existe pas"), 400);
+            return Response.sendResponse(await await new Message("Cet utilisateur n'existe pas"), 400);
         }
-        return Response.sendResponse(new Message("Vous n'avez pas le droit d'ajouter des gérant pour cette Annexe"), 401);
+        return Response.sendResponse(await await new Message("Vous n'avez pas le droit d'ajouter des gérant pour cette Annexe"), 401);
     }
 
     static async removeManager(idAnnex, idUser, user) {
@@ -241,18 +241,18 @@ class AnnexController {
             });
             if (manager) {
                 annex.removeUser(manager);
-                return Response.sendResponse(new Message("Le manager à bien été supprimer"), 200);
+                return Response.sendResponse(await await new Message("Le manager à bien été supprimer"), 200);
             }
-            return Response.sendResponse(new Message("Cet utilisateur n'existe pas"), 400);
+            return Response.sendResponse(await await new Message("Cet utilisateur n'existe pas"), 400);
         }
-        return Response.sendResponse(new Message("Vous n'avez pas le droit de supprimer pour cette Annexe"), 401);
+        return Response.sendResponse(await await new Message("Vous n'avez pas le droit de supprimer pour cette Annexe"), 401);
 
     }
 
     static async getMyAnnexes(user) {
         const annexList = await user.getAnnexes();
         console.log(annexList);
-        return Response.sendResponse(annexList.filter(annex => annex.active), 200);
+        return Response.sendResponse(await await annexList.filter(annex => annex.active), 200);
     }
 
     /**
@@ -273,10 +273,10 @@ class AnnexController {
             }
         });
         if (annex) {
-            return Response.sendResponse(annex, 200);
+            return Response.sendResponse(await await annex, 200);
         }
         const message = new Message("Cette Annex n'existe pas")
-        return Response.sendResponse(message, 400)
+        return Response.sendResponse(await await message, 400)
     }
 
     /**
@@ -300,16 +300,16 @@ class AnnexController {
                 user: user
             });
             if (reportExist) {
-                return Response.sendResponse(new Message("Vous avez déjà reporter " + annex.name), 400);
+                return Response.sendResponse(await await new Message("Vous avez déjà reporter " + annex.name), 400);
             }
             const report = await Report.create({
                 reporter: "user"
             });
             report.setAnnex(annex);
             report.setUser(user);
-            return Response.sendResponse(new Message("Vous venez reporter l'annexe " + annex.name), 200);
+            return Response.sendResponse(await await new Message("Vous venez reporter l'annexe " + annex.name), 200);
         }
-        return Response.sendResponse(new Message("Vous ne pouvez pas reporter l'annexe, elle n'existe pas"), 400);
+        return Response.sendResponse(await await new Message("Vous ne pouvez pas reporter l'annexe, elle n'existe pas"), 400);
 
     }
 
@@ -340,7 +340,7 @@ class AnnexController {
                     active: true
                 }
             });
-            return Response.sendResponse(annexUpdate, 200);
+            return Response.sendResponse(await annexUpdate, 200);
         }
         return Response.sendResponse(new Message("Vous n'êtes pas manager de cette annexe"), 403)
     }
@@ -351,7 +351,7 @@ class AnnexController {
      * @returns {Promise<*>}
      */
     static async searchAnnex(name) {
-        return Response.sendResponse(Annex.findAll({
+        return Response.sendResponse(await Annex.findAll({
             where: {
                 name: {
                     [op.like]: name + '%',

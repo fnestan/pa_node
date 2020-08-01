@@ -1,21 +1,9 @@
 const models = require('../models');
-const Annex = models.Annex;
-const Association = models.Association;
-const User = models.User;
-const AnnexAvailability = models.AnnexAvailability;
-const Day = models.Day;
-const Image = models.Image;
-const Report = models.Report;
-const Role = models.Role;
 const Service = models.Service;
 const Donation = models.Donation;
 const Sequelize = require('sequelize');
+const Response = require('../helpers/response');
 const op = Sequelize.Op;
-const operatorsAliases = {
-    $eq: op.eq,
-    $or: op.or,
-};
-
 
 class SearchController {
 
@@ -40,7 +28,7 @@ class SearchController {
             }
         });
         data.service.push(...services);
-        return data;
+        return Response.sendResponse(data, 200);
     }
 
 
