@@ -19,68 +19,6 @@ const operatorsAliases = {
 
 class SearchController {
 
-    /**
-     * @returns {Promise<any>}
-     */
-    static async getAllAnnexes() {
-        return await Annex.findAll();
-    }
-
-    /**
-     * @returns {Promise<any>}
-     */
-    static async getAllAssociations() {
-        return await Association.findAll();
-    }
-
-    /**
-     * @returns {Promise<any>}
-     */
-    static async getAllUsers() {
-        return await User.findAll();
-    }
-
-    /**
-     * @returns {Promise<any>}
-     */
-    static async getAllAnnexAvailabilities() {
-        return await AnnexAvailability.findAll();
-    }
-
-    /**
-     * @returns {Promise<any>}
-     */
-    static async getAllDays() {
-        return await Day.findAll();
-    }
-
-    /**
-     * @returns {Promise<any>}
-     */
-    static async getAllImages() {
-        return await Image.findAll();
-    }
-
-    /**
-     * @returns {Promise<any>}
-     */
-    static async getAllReports() {
-        return await Report.findAll();
-    }
-
-    /**
-     * @returns {Promise<any>}
-     */
-    static async getAllRoles() {
-        return await Role.findAll();
-    }
-
-    /**
-     * @returns {Promise<any>}
-     */
-    static async getAllServices() {
-        return await Service.findAll();
-    }
 
     static async searchNeed(name) {
         const data = {don: [], service: []};

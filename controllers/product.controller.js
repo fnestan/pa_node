@@ -37,7 +37,7 @@ class ProductController {
     /**
      *
      * @param productId
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async deleteProduct(productId) {
         const product = await Product.update({active: false}, {
