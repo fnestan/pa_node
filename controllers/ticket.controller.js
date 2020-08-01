@@ -14,7 +14,7 @@ class TicketController {
      * @param user
      * @returns {Promise<Model> | Promise<Product> | Domain | Promise<void> | * | Promise<Credential | null>}
      */
-    static createTicket(label, user) {
+    static async createTicket(label, user) {
         const number = Math.floor(Math.random() * Math.floor(999999));
         return Response.sendResponse(await Ticket.create({
             label: label,

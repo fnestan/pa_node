@@ -4,7 +4,7 @@ const Type = models.Type;
 
 class TypeController {
 
-    static getAllTypes() {
+    static async getAllTypes() {
         return Response.sendResponse(await Type.findAll(), 200);
     }
 }

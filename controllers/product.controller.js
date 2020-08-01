@@ -24,8 +24,8 @@ class ProductController {
      * @param name
      * @returns {[*, *]}
      */
-    static searchProduct(name) {
-        return Response.sendResponse(Product.findAll({
+    static async searchProduct(name) {
+        return Response.sendResponse(await Product.findAll({
             where: {
                 name: {
                     [op.like]: name + '%'
