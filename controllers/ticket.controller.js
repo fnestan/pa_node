@@ -1,7 +1,9 @@
 const models = require('../models');
 const Ticket = models.Ticket;
-const Message = models.Message;
+const TicketMessage = models.Message;
 const User = models.User;
+const Response = require('../helpers/response');
+const Message = require('../helpers/errormessage');
 
 
 class TicketController {
@@ -13,14 +15,14 @@ class TicketController {
      * @returns {Promise<Model> | Promise<Product> | Domain | Promise<void> | * | Promise<Credential | null>}
      */
     static createTicket(label, user) {
-        const number = Math.floor(Math.random() * Math.floor(9999999));
-        return Ticket.create({
+        const number = Math.floor(Math.random() * Math.floor(999999));
+        return Response.sendResponse(Ticket.create({
             label: label,
             number: number,
             UserId: user.id,
             active: true,
             creationDate: new Date()
-        });
+        }), 201);
     }
 
     /**
@@ -37,27 +39,22 @@ class TicketController {
             }
         });
         if (!ticket) {
-            return {
-                message: "Ce Ticket n'existe pas"
-            }
+            return Response.sendResponse(new Message("Ce Ticket n'existe pas"), 400)
         }
         if (!ticket.active) {
-            return {
-                message: "Ce Ticket à été cloture veuillez en créer un nouveau"
-            }
+            return Response.sendResponse(new Message("Ce Ticket à été cloture veuillez en créer un nouveau"), 400);
+
         }
         if (ticket.UserId !== user.id && user.RoleId !== 4) {
-            return {
-                message: "Vous  n'avez pas le droit d'ajouter un message à ce ticket"
-            }
+            return Response.sendResponse(new Message("Vous  n'avez pas le droit d'ajouter un message à ce ticket"), 401);
         }
-        const message = await Message.create({
+        const message = await TicketMessage.create({
             content: content,
             TicketId: id,
             redactorId: user.id,
             sendDate: new Date()
         });
-        return this.getTicket(id, user)
+        return this.getTicket(id, user);
     }
 
     static async closeTicket(id, user) {
@@ -67,28 +64,21 @@ class TicketController {
             }
         });
         if (!ticket) {
-            return {
-                message: "Ce Ticket n'existe pas"
-            }
+            return Response.sendResponse(new Message("Ce Ticket n'existe pas"), 400);
         }
         if (!ticket.active) {
-            return {
-                message: "Ce Ticket à déjà  été cloturer"
-            }
+            return Response.sendResponse(new Message("Ce Ticket à déjà  été cloturer"), 400);
         }
         if (ticket.UserId !== user.id && user.RoleId !== 4) {
-            return {
-                message: "Vous  n'avez pas le droit de clôture ce ticket"
-            }
+            return Response.sendResponse(new Message("Vous  n'avez pas le droit de clôture ce ticket"), 400);
         }
         const t = await Ticket.update({active: false}, {
             where: {
                 id: id
             }
         });
-        return {
-            message: "Le ticket a ete clôturer"
-        }
+        return Response.sendResponse(new Message("Le ticket a ete clôturer"), 200);
+
     }
 
     static async getMyTickets(user) {
@@ -98,47 +88,36 @@ class TicketController {
                 active: true
             }
         });
-        return tickets;
+        return Response.sendResponse(tickets, 200);
     }
 
     static async getAllTickets() {
-        return Ticket.findAll();
+        return Response.sendResponse(Ticket.findAll(), 200);
     }
 
     static async getTicket(id, user) {
         const ticket = await Ticket.findOne({
             include: {
-                model: Message,
+                model: TicketMessage,
                 include: {model: User, as: 'redactor'},
                 separate: true,
                 order: [
                     ['id', 'ASC']
                 ]
-
             },
-
             where: {
-                id: id
+                id: id,
+                active: true
             }
         });
         if (!ticket) {
-            return {
-                message: "Ce Ticket n'existe pas"
-            }
-        }
-        if (!ticket.active) {
-            return {
-                message: "Ce Ticket à été cloturer"
-            }
+            return Response.sendResponse(new Message("Ce Ticket n'existe pas"), 400);
         }
         if (ticket.UserId !== user.id && user.RoleId !== 4) {
-            return {
-                message: "Vous  n'avez pas le droit de clôture ce ticket"
-            }
+            return Response.sendResponse(new Message("Vous  n'avez pas le droit de clôture ce ticket"), 400);
         }
-        return ticket;
+        return Response.sendResponse(ticket, 200);
     }
 }
 
-//getMyTickets
 module.exports = TicketController;
