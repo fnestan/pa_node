@@ -5,6 +5,8 @@ const UserDonation = models.UserDonation;
 const Donation = models.Donation;
 const Product = models.Product;
 const Requerir = models.Requerir;
+const Response = require('../helpers').Response;
+const Message = require('../helpers').Response;
 const Type = models.Type;
 const Sequelize = require('sequelize');
 
@@ -15,7 +17,7 @@ class DonationController {
      * @param description
      * @param products
      * @param idAnnex
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async createDonation(name, description, products, idAnnex) {
         const newDonation = await Donation.create({
@@ -39,34 +41,34 @@ class DonationController {
             }
         }
         newDonation.setAnnex(idAnnex);
-        return newDonation;
+        return Response.sendResponse(newDonation, 201);
     }
 
 
     /**
      * @param idDonation
      * @param quantityDonation
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async completeDonation(idDonation, quantityDonation) {
-        return await Donation.update({status: true}, {
+        return Response.sendResponse(await Donation.update({status: true}, {
             where: {
                 id: idDonation,
                 quantity: quantityDonation
             }
-        });
+        }), 200);
     }
 
     /**
      * @param idDonation
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async deleteDonation(idDonation) {
-        return Donation.update({actif: false}, {
+        return Response.sendResponse(Donation.update({actif: false}, {
             where: {
                 id: idDonation
             }
-        });
+        }), 200);
     }
 
     static async getDonationList(idAnnex, user) {
@@ -79,15 +81,15 @@ class DonationController {
                 }
             });
         }
-        return Donation.findAll({
+        return Response.sendResponse(Donation.findAll({
             where: {
                 AnnexId: idAnnex
             }
-        });
+        }), 200);
     }
 
     static async getDonationById(idDonation) {
-        return Donation.findOne({
+        return Response.sendResponse(Donation.findOne({
             include: [{
                 model: Requerir,
                 include: {
@@ -101,7 +103,7 @@ class DonationController {
             where: {
                 id: idDonation
             }
-        })
+        }), 200);
     }
 
     static async answerDonation(donations, user, idDonation) {
@@ -114,7 +116,6 @@ class DonationController {
                 DonationId: idDonation,
                 give: false
             });
-            console.log("--------------------------------------------------------");
             const requerir = await Requerir.update({quantity: Sequelize.literal('quantity -' + donations[i].quantity)}, {
                 where: {
                     DonationId: idDonation,
@@ -122,7 +123,7 @@ class DonationController {
                 }
             });
         }
-        return {message: "Votre donation a bien été enregistré"}
+        return Response.sendResponse(new Message("Votre donation a bien été enregistré"), 200);
     }
 
     static async getPastDonations(user) {
@@ -152,9 +153,8 @@ class DonationController {
                 response.push(don)
             }
         }
-        return {donationHistory: response};
+        return Response.sendResponse({donationHistory: response}, 200);
     }
-
 }
 
 module.exports = DonationController;

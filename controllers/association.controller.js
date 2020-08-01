@@ -6,6 +6,8 @@ const Day = models.Day;
 const Role = models.Role;
 const User = models.User;
 const MailService = require('../service/mail.service');
+const Message = require('../helpers/errormessage');
+const Response = require('../helpers/response.js');
 const Sequelize = require('sequelize');
 const op = Sequelize.Op;
 const operatorsAliases = {
@@ -16,50 +18,6 @@ const operatorsAliases = {
 
 class AssociationController {
 
-
-    /**
-     *
-     * @returns {Promise<void>}
-     * @param associationId
-     */
-    static async banAssociation(associationId) {
-
-        const association = await Association.update({active: false}, {
-            where: {
-                id: associationId
-            }
-        });
-        const annexes = await Annex.findAll({
-            where: {
-                associationId: associationId
-            }
-        });
-        for (const annex of annexes) {
-            await MailService.sendMail(annex.email, "annex");
-            annex.active = false;
-            await annex.save();
-        }
-        return association;
-    }
-
-    /**
-     *
-     * @param name
-     * @param description
-     * @param city
-     * @param number
-     * @returns {Promise<void>}
-     */
-    static async updateAssociation(name, description, city, IdAssociation) {
-        const association = await Association.update({
-            name: name, description: description, city: city
-        }, {
-            where: {
-                id: IdAssociation
-            }
-        });
-        return association;
-    }
 
     static async getAllAssociation(page) {
         const va = await Association.count({
@@ -75,7 +33,7 @@ class AssociationController {
             limit: 10,
             offset: element
         })
-        return {count: va, data: data}
+        return Response.sendResponse({count: va, data: data}, 200);
     }
 
     static async getAllAssociationByName(page, name) {
@@ -98,18 +56,18 @@ class AssociationController {
             limit: 10,
             offset: element
         });
-        return {count: va, data: data}
+        return Response.sendResponse({count: va, data: data}, 200);
     }
 
     static async getAssociationById(id) {
-        return Association.findOne({
-            include:{
-                model:Annex
+        return Response.sendResponse(Association.findOne({
+            include: {
+                model: Annex
             },
             where: {
                 id: id
             }
-        })
+        }), 200);
     }
 
 }

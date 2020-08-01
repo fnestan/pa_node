@@ -69,33 +69,6 @@ class AnnexController {
      * @param annexId
      * @returns {Promise<[*, *]>}
      */
-    static async banAnnex(annexId) {
-
-        const annex = await Annex.update({active: false}, {
-            where: {
-                id: annexId
-            }
-        });
-        if (+annex === 1) {
-            const ann = await Annex.findOne({
-                where: {
-                    id: annexId
-                }
-            });
-            await MailService.sendMail(ann.email, "Bannissement", "Nous somme au regret de vous annoncer que cette annex a été banni.\n " +
-                "Pour plus d'information veullez contacter l'administrateur.")
-            const message = new Message(`L'annexe à bien été banni`);
-            return Response.sendResponse(message, 200);
-        }
-        const message = new Message(`Cette annexe n'existe pas`);
-        return Response.sendResponse(message, 400);
-    }
-
-    /**
-     *
-     * @param annexId
-     * @returns {Promise<[*, *]>}
-     */
     static async validateAnnex(annexId) {
         const annexSearch = await Annex.findOne({
             where: {

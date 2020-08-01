@@ -79,18 +79,6 @@ module.exports = function (app) {
     /**
      *
      */
-    app.get("/annex/ban/:idAnnex", AuthMiddleware.isAdmin(), async (req, res) => {
-        try {
-            const response = await AnnexController.banAnnex(+req.params.idAnnex);
-            res.status(response[1]).json(response[0]);
-        } catch (err) {
-            res.status(409).json(new Message(err.toString()));
-        }
-    });
-
-    /**
-     *
-     */
     app.put("/annex/validate/:idAnnex", AuthMiddleware.isAdmin(), async (req, res) => {
         try {
             const response = await AnnexController.validateAnnex(+req.params.idAnnex);
