@@ -2,13 +2,15 @@ const models = require('../models');
 const Service = models.Service;
 const Annex = models.Annex;
 const Sequelize = require('sequelize');
+const Response = require('../helpers/response');
+const Message = require('../helpers/errormessage');
 
 class ServiceController {
 
     /**
      * @param idUser
      * @param idService
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async answerService(user, idService) {
         const service = await Service.findOne({
@@ -23,11 +25,11 @@ class ServiceController {
         });
         if (user) {
             if (user.RoleId === 1) {
-                return {message: "Vous n'avez pas le droit de réponder à un service en tant que donateur"}
+                return Response.sendResponse(new Message("Vous n'avez pas le droit de réponde à un service en tant que donateur"), 401)
             }
         }
         service.addUser(user);
-        return service;
+        return Response.sendResponse(service, 200);
     }
 
     /**
@@ -36,7 +38,7 @@ class ServiceController {
      * @param description
      * @param quantite
      * @param idAnnex
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async createService(idAnnex, nom, date_service, description, quantite) {
         const newService = await Service.create({
@@ -48,24 +50,25 @@ class ServiceController {
             actif: true
         });
         newService.setAnnex(idAnnex);
-        return newService;
+        return Response.sendResponse(newService, 200);
     }
 
     /**
      * @param idService
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async completeService(idService) {
-        return await Service.update({status: true}, {
+        const service = await Service.update({status: true}, {
             where: {
                 id: idService
             }
         });
+        return Response.sendResponse(new Message("Le service vient d'être complété"), 200)
     }
 
     /**
      * @param idService
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async deleteService(idService) {
         const service = await Service.update({actif: false}, {
@@ -73,7 +76,7 @@ class ServiceController {
                 id: idService
             }
         });
-        return service
+        return Response.sendResponse(service, 200);
     }
 
 
@@ -93,17 +96,17 @@ class ServiceController {
                 }
             });
         }
-        return Service.findAll({
+        return Response.sendResponse(Service.findAll({
             where: {
                 AnnexId: idAnnex
             }
-        });
+        }), 200);
     }
 
     /**
      *
      * @param idAnnex
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async getSeviceById(idService, user) {
         const service = await Service.findOne({
@@ -121,8 +124,7 @@ class ServiceController {
         } else {
             isAnswer = false
         }
-        console.log({...service, isAnswer: isAnswer})
-        return {service: service, isAnswer: isAnswer};
+        return Response.sendResponse({service: service, isAnswer: isAnswer}, 200);
     }
 
     static async getPastServices(user) {
@@ -140,7 +142,7 @@ class ServiceController {
                 myServices.push(service);
             }
         }
-        return myServices;
+        return Response.sendResponse(myServices, 200);
     }
 
 }

@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser');
 const ServiceController = require('../controllers').ServiceController;
 const Verification = require('../helpers').VerificationHelper;
+const Message = require('../helpers').ErrorMessage;
 const AuthMiddleware = require('../middlewares/auth.middleware');
 
 
@@ -9,42 +10,44 @@ module.exports = function (app) {
 
     app.post("/annex/service/:idAnnex", bodyParser.json(), AuthMiddleware.isManager(), async (req, res) => {
         try {
-            const service = await ServiceController.createService(req.params.idAnnex, req.body.nom, req.body.date_service, req.body.description,
-                req.body.quantite, req.body.status, req.body.actif);
-            res.status(201).json(service);
+            const response = await ServiceController.createService(req.params.idAnnex,
+                req.body.nom,
+                req.body.date_service,
+                req.body.description,
+                req.body.quantite,
+                req.body.status,
+                req.body.actif);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
-            console.log(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
 
     app.put("/annex/service/complete/:idService", AuthMiddleware.isManager(), async (req, res) => {
         try {
-            const service = await ServiceController.completeService(req.params.idService);
-            res.status(200).json(service);
+            const response = await ServiceController.completeService(req.params.idService);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
-            console.log(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
 
     app.put("/annex/service/delete/:idService", AuthMiddleware.isManager(), async (req, res) => {
         try {
-            const service = await ServiceController.deleteService(req.params.idService);
-            res.status(200).json(service);
+            const response = await ServiceController.deleteService(req.params.idService);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
-            console.log(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
     app.get("/annex/:idAnnex/service/list", AuthMiddleware.auth(), async (req, res) => {
         try {
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const services = await ServiceController.getSeviceList(req.params.idAnnex, user);
-            res.status(200).json(services);
-        } catch (e) {
-            res.status(400).json(e)
+            const response = await ServiceController.getSeviceList(req.params.idAnnex, user);
+            res.status(response[1]).json(response[0]);
+        } catch (err) {
+            res.status(409).json(new Message(err.toString()));
         }
     });
 
@@ -52,11 +55,10 @@ module.exports = function (app) {
         try {
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const services = await ServiceController.getSeviceById(req.params.idService, user);
-            res.status(200).json(services);
-        } catch (e) {
-            console.log(e)
-            res.status(400).json(e)
+            const response = await ServiceController.getSeviceById(req.params.idService, user);
+            res.status(response[1]).json(response[0]);
+        } catch (err) {
+            res.status(409).json(new Message(err.toString()));
         }
     });
 
@@ -64,14 +66,10 @@ module.exports = function (app) {
         try {
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const service = await ServiceController.answerService(user, req.params.idService);
-            if (service.message) {
-                res.status(400).json({mesage: service.message});
-            } else {
-                res.status(201).json(service);
-            }
+            const response = await ServiceController.answerService(user, req.params.idService);
+            res.status(response[1]).json(response[0]);
         } catch (err) {
-            res.status(409).json(err);
+            res.status(409).json(new Message(err.toString()));
         }
     });
 
@@ -79,10 +77,10 @@ module.exports = function (app) {
         try {
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const services = await ServiceController.getPastServices(user);
-            res.status(200).json(services);
-        } catch (e) {
-            res.status(400).json(e)
+            const response = await ServiceController.getPastServices(user);
+            res.status(response[1]).json(response[0]);
+        } catch (err) {
+            res.status(409).json(new Message(err.toString()));
         }
     });
 };
