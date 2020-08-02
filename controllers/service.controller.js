@@ -84,7 +84,7 @@ class ServiceController {
      *
      * @param idAnnex
      * @param user
-     * @returns {Promise<void>}
+     * @returns {Promise<[*, *]>}
      */
     static async getSeviceList(idAnnex, user) {
         const role = user.getRole();
@@ -98,7 +98,8 @@ class ServiceController {
         }
         return Response.sendResponse(await Service.findAll({
             where: {
-                AnnexId: idAnnex
+                AnnexId: idAnnex,
+                actif: true
             }
         }), 200);
     }
@@ -117,14 +118,17 @@ class ServiceController {
                 id: idService
             }
         });
-        let isAnswer
-        const users = await service.getUsers();
-        if (users.some(vol => vol.id === user.id)) {
-            isAnswer = true;
-        } else {
-            isAnswer = false
+        console.log(service.nom)
+        if (service) {
+            let isAnswer
+            const users = await service.getUsers();
+            if (users.some(vol => vol.id === user.id)) {
+                isAnswer = true;
+            } else {
+                isAnswer = false
+            }
+            return Response.sendResponse({service: service, isAnswer: isAnswer}, 200);
         }
-        return Response.sendResponse(await {service: service, isAnswer: isAnswer}, 200);
     }
 
     static async getPastServices(user) {
