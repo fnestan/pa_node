@@ -23,7 +23,7 @@
     "dotenv": "^8.2.0",
     "excel-parser": "^0.2.2",
     "express": "^4.17.1",
-    "express-fileupload": "^1.1.7-alpha.3",
+    "express-fileupload": "^1.1.9",
     "fs": "0.0.1-security",
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.1.0",
