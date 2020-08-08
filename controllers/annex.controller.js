@@ -100,11 +100,13 @@ class AnnexController {
     /**
      *
      * @param annexId
-     * @param horaire
+     * @param openingTime
+     * @param closingTime
+     * @param dayId
      * @param user
-     * @returns {Promise<[*, *]>}
+     * @returns {Promise<*[]|[*, *]>}
      */
-    static async createAvailability(annexId, horaire, user) {
+    static async createAvailability(annexId, openingTime, closingTime, dayId, user) {
         const annex = await Annex.findOne({
             where: {
                 id: annexId,
@@ -115,25 +117,21 @@ class AnnexController {
         const u = users.find(element => element.id === user.id);
         const role = await user.getRole();
         if (u || role.id === 3) {
-            if (horaire) {
-                for (let i = 0; i < horaire.length; i++) {
-                    const day = await Day.findOne({
-                        where: {
-                            id: horaire[i].idJour
-                        }
-                    });
-                    const annexAvailability = await AnnexAvailability.create({
-                        openingTime: horaire[i].openingTime,
-                        closingTime: horaire[i].closingTime
-                    });
-                    await annexAvailability.setDay(day);
-                    await annexAvailability.setAnnex(annex);
-                    await annexAvailability.save()
+            const day = await Day.findOne({
+                where: {
+                    id: dayId
                 }
-            }
-            return annex;
+            });
+            const annexAvailability = await AnnexAvailability.create({
+                openingTime: openingTime,
+                closingTime: closingTime
+            });
+            await annexAvailability.setDay(day);
+            await annexAvailability.setAnnex(annex);
+            await annexAvailability.save();
+            return this.getAnnexByAId(annexId);
         }
-        return Response.sendResponse(await await new Message("Vous n'avez pas le droit d'effectuer cette action"), 401);
+        return Response.sendResponse(await new Message("Vous n'avez pas le droit d'effectuer cette action"), 401);
     }
 
     /**
@@ -164,9 +162,9 @@ class AnnexController {
                 }
             });
 
-            return Response.sendResponse(await await new Message("L'annexe à bien été modifiée"), 200);
+            return Response.sendResponse(await new Message("L'annexe à bien été modifiée"), 200);
         }
-        return Response.sendResponse(await await new Message("Vous n'avez pas le droit de modifier des disponibilité pour cette Annexe"), 401)
+        return Response.sendResponse(await new Message("Vous n'avez pas le droit de modifier des disponibilité pour cette Annexe"), 401)
     }
 
     static async deleteAvailable(idavailability, user) {
@@ -175,15 +173,16 @@ class AnnexController {
                 id: idavailability
             }
         });
-        const annex = await availability.getAnnex(availability.AnnexId)
+        const annex = await availability.getAnnex();
         const users = await annex.getUsers();
         const u = users.find(element => element.id === user.id);
         const role = await user.getRole();
         if (u || role.id === 3) {
-            await annex.destroy();
-            return Response.sendResponse(await await new Message("L'annexe à bien été supprimé"), 200);
+            await availability.destroy();
+            console.log(annex.id)
+            return this.getAnnexByAId(annex.id);
         }
-        return Response.sendResponse(await await new Message("Vous n'avez pas le droit de supprimer des disponibilité pour cette Annexe"), 401)
+        return Response.sendResponse(await new Message("Vous n'avez pas le droit de supprimer des disponibilité pour cette Annexe"), 401)
     }
 
     /**
@@ -307,9 +306,9 @@ class AnnexController {
             });
             report.setAnnex(annex);
             report.setUser(user);
-            return Response.sendResponse(await await new Message("Vous venez reporter l'annexe " + annex.name), 200);
+            return Response.sendResponse(await new Message("Vous venez reporter l'annexe " + annex.name), 200);
         }
-        return Response.sendResponse(await await new Message("Vous ne pouvez pas reporter l'annexe, elle n'existe pas"), 400);
+        return Response.sendResponse(await new Message("Vous ne pouvez pas reporter l'annexe, elle n'existe pas"), 400);
 
     }
 
@@ -325,7 +324,7 @@ class AnnexController {
         const userManageers = await annex.getUsers();
         const response = userManageers.find(element => element.id === user.id);
         if (response) {
-            const annexUpdate = Annex.update({
+            const annexUpdate = await Annex.update({
                 name: name,
                 email: email,
                 street: street,
@@ -340,7 +339,7 @@ class AnnexController {
                     active: true
                 }
             });
-            return Response.sendResponse(await annexUpdate, 200);
+            return Response.sendResponse(new Message("L'annexe" + name + " a bien été modifiée"), 200);
         }
         return Response.sendResponse(new Message("Vous n'êtes pas manager de cette annexe"), 403)
     }

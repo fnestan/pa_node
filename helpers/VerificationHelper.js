@@ -1,4 +1,6 @@
 const models = require('../models');
+const Response = require('../helpers/response');
+const Message = require('../helpers/errormessage');
 const User = models.User;
 const Annex = models.Annex;
 
@@ -13,12 +15,8 @@ class VerificationHelper {
                 response = await this.annexFromEmail(email);
             }
             if (response) {
-                let message = {
-                    Code: 400,
-                    Message: "Cet email existe déjà"
-                };
                 try {
-                    res.status(message.Code).json(message.Message);
+                    res.status(400).json(new Message("Cet email existe déjà"));
                 } catch (e) {
                     console.log(e);
                 }
@@ -34,12 +32,9 @@ class VerificationHelper {
         try {
             const user = await this.userFromLogin(login);
             if (user) {
-                let response = {
-                    Code: 400,
-                    Message: "Ce login existe déjà"
-                };
                 try {
-                    res.status(response.Code).json(response.Message);
+                    res.status(400).json(new Message("Ce login existe déjà"));
+
                 } catch (e) {
                     console.log(e);
                 }
@@ -94,13 +89,10 @@ class VerificationHelper {
     static allRequiredParam(...args) {
         for (let i = 0; i < args.length - 1; i++) {
             if (!args[i] && typeof args[i] !== "boolean") {
-                let response = {
-                    Code: 400,
-                    Message: "Certains Champs obligatoires ne  sont pas renseignés"
-                };
                 const res = args[args.length - 1];
                 try {
-                    res.status(response.Code).json(response.Message);
+                    res.status(400).json(new Message("Certains Champs obligatoires ne  sont pas renseignés"));
+
                 } catch (e) {
                     console.log(e);
                 }
@@ -112,12 +104,8 @@ class VerificationHelper {
 
     static passwordCormimationGood(password, passwordConfirm, res) {
         if (password !== passwordConfirm) {
-            let response = {
-                Code: 400,
-                Message: "le mot de passe de doit être similaire à celui de la confirmation"
-            };
             try {
-                res.status(response.Code).json(response.Message);
+                res.status(400).json(new Message("Le mot de passe de doit être similaire à celui de la confirmation"));
             } catch (e) {
                 console.log(e);
             }

@@ -79,7 +79,7 @@ module.exports = function (app) {
     /**
      *
      */
-    app.put("/annex/validate/:idAnnex", AuthMiddleware.isAdmin(), async (req, res) => {
+    app.get("/annex/validate/:idAnnex", AuthMiddleware.isAdmin(), async (req, res) => {
         try {
             const response = await AnnexController.validateAnnex(+req.params.idAnnex);
             res.status(response[1]).json(response[0]);
@@ -89,10 +89,10 @@ module.exports = function (app) {
     });
     app.post("/annex/availability/create/:idAnnex", bodyParser.json(), AuthMiddleware.isManager(), async (req, res) => {
         try {
-            const {horaires} = req.body;
+            const {openingTime,closingTime,dayId} = req.body;
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const response = await AnnexController.createAvailability(+req.params.idAnnex, horaires, user);
+            const response = await AnnexController.createAvailability(+req.params.idAnnex, openingTime,closingTime,dayId, user);
             res.status(response[1]).json(response[0]);
         } catch (err) {
             res.status(409).json(new Message(err.toString()));
@@ -171,9 +171,10 @@ module.exports = function (app) {
         }
     });
 
-    app.put('/annex/update/:id', AuthMiddleware.isManager(), async (req, res) => {
-        const {name, email, street, zipCode, city, phone} = req.body;
-        const allRequireParams = Verification.allRequiredParam(name, email, street, zipCode, city, phone, res);
+    app.put('/annex/update/:id', AuthMiddleware.isManager(),bodyParser.json(), async (req, res) => {
+        console.log(req.body)
+        const {name, email, street, zipCode, city, phone, description} = req.body;
+        const allRequireParams = Verification.allRequiredParam(name,description, email, street, zipCode, city, phone, res);
         if (!allRequireParams) {
             return;
         }
