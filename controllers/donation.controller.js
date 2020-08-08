@@ -6,7 +6,8 @@ const Donation = models.Donation;
 const Product = models.Product;
 const Requerir = models.Requerir;
 const Response = require('../helpers').Response;
-const Message = require('../helpers').Response;
+const Message = require('../helpers').ErrorMessage;
+const AnnexController = require('../controllers').AnnexController;
 const Type = models.Type;
 const Sequelize = require('sequelize');
 
@@ -51,7 +52,7 @@ class DonationController {
      * @returns {Promise<[*, *]>}
      */
     static async completeDonation(idDonation, quantityDonation) {
-        return Response.sendResponse(await await Donation.update({status: true}, {
+        return Response.sendResponse(await Donation.update({status: true}, {
             where: {
                 id: idDonation,
                 quantity: quantityDonation
@@ -63,25 +64,31 @@ class DonationController {
      * @param idDonation
      * @returns {Promise<[*, *]>}
      */
-    static async deleteDonation(idDonation) {
-        return Response.sendResponse(await Donation.update({actif: false}, {
+    static async deleteDonation(idDonation, user) {
+        const donation = await Donation.update({actif: false}, {
             where: {
                 id: idDonation
             }
-        }), 200);
+        });
+        const d = await Donation.findOne({
+            where: {
+                id: idDonation
+            }
+        });
+        return await this.getDonationList(d.AnnexId, user);
     }
 
     static async getDonationList(idAnnex, user) {
         const role = await user.getRole();
         if (role.id === 4) {
-            return Response.sendResponse(await await Donation.findAll({
+            return Response.sendResponse(await Donation.findAll({
                 where: {
                     AnnexId: idAnnex,
                     actif: true
                 }
             }), 200);
         }
-        return Response.sendResponse(await await Donation.findAll({
+        return Response.sendResponse(await Donation.findAll({
             where: {
                 AnnexId: idAnnex
             }

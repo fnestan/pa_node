@@ -70,13 +70,18 @@ class ServiceController {
      * @param idService
      * @returns {Promise<[*, *]>}
      */
-    static async deleteService(idService) {
+    static async deleteService(idService, user) {
         const service = await Service.update({actif: false}, {
             where: {
                 id: idService
             }
         });
-        return Response.sendResponse(await service, 200);
+        const s = await Service.findOne({
+            where: {
+                id: idService
+            }
+        });
+        return this.getSeviceList(s.AnnexId, user);
     }
 
 

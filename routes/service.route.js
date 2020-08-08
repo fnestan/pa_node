@@ -34,7 +34,9 @@ module.exports = function (app) {
 
     app.put("/annex/service/delete/:idService", AuthMiddleware.isManager(), async (req, res) => {
         try {
-            const response = await ServiceController.deleteService(req.params.idService);
+            const authorization = req.headers['authorization'];
+            const user = await Verification.userFromToken(authorization.split(" ")[1]);
+            const response = await ServiceController.deleteService(req.params.idService,user);
             res.status(response[1]).json(response[0]);
         } catch (err) {
             res.status(409).json(new Message(err.toString()));
