@@ -11,6 +11,8 @@ module.exports = function(sequelize, DataTypes) {
     Product.associate = (models) => {
         Product.belongsTo(models.Type);
         Product.hasMany(models.Requerir);
+        Product.hasMany(models.Stock);
+
     };
     return Product;
 };

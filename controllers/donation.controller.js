@@ -5,9 +5,9 @@ const UserDonation = models.UserDonation;
 const Donation = models.Donation;
 const Product = models.Product;
 const Requerir = models.Requerir;
+const Stock = models.Stock;
 const Response = require('../helpers').Response;
 const Message = require('../helpers').ErrorMessage;
-const AnnexController = require('../controllers').AnnexController;
 const Type = models.Type;
 const Sequelize = require('sequelize');
 
@@ -28,11 +28,24 @@ class DonationController {
             actif: true
         });
         for (let i = 0; i < products.length; i++) {
+            const stock = await Stock.findOne({
+                where: {
+                    ProductId: products[i].idProduct,
+                    AnnexId: idAnnex
+                }
+            });
+            if (!stock) {
+                const s = await Stock.create({
+                    quantity: 0,
+                    AnnexId: idAnnex,
+                    ProductId: products[i].idProduct
+                });
+            }
             const productRequest = await Product.findOne({
                 where: {
                     id: products[i].idProduct
                 }
-            })
+            });
             if (productRequest) {
                 const requerir = await Requerir.create({
                     quantity: products[i].quantity,
@@ -115,13 +128,23 @@ class DonationController {
 
     static async answerDonation(donations, user, idDonation) {
         for (let i = 0; i < donations.length; i++) {
-            console.log(donations[i].productId)
             const donation = await UserDonation.create({
                 UserId: user.id,
                 quantity: donations[i].quantity,
                 ProductId: donations[i].productId,
                 DonationId: idDonation,
                 give: false
+            });
+            const d = Donation.findOne({
+                where: {
+                    id: idDonation
+                }
+            });
+            const stock = await Stock.update({quantity: Sequelize.literal('quantity +' + donations[i].quantity)}, {
+                where: {
+                    ProductId: donations[i].productId,
+                    AnnexId: d.AnnexId
+                }
             });
             const requerir = await Requerir.update({quantity: Sequelize.literal('quantity -' + donations[i].quantity)}, {
                 where: {

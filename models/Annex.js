@@ -22,6 +22,8 @@ module.exports = (sequelize, DataTypes) => {
         Annex.hasMany(models.Service);
         Annex.belongsToMany(models.User, {through: 'manager'});
         Annex.belongsToMany(models.Image, {through: 'annexImage'});
+        Annex.hasMany(models.Stock);
+
 
 
     };
