@@ -133,6 +133,7 @@ module.exports = function (app) {
             const response = await AnnexController.addManager(+req.params.idAnnex, email, user);
             res.status(response[1]).json(response[0]);
         } catch (err) {
+            console.log(err)
             res.status(409).json(new Message(err.toString()));
         }
     });

@@ -25,7 +25,7 @@ class ServiceController {
         });
         if (user) {
             if (user.RoleId === 1) {
-                return Response.sendResponse(await new Message("Vous n'avez pas le droit de réponde à un service en tant que donateur"), 401)
+                return Response.sendResponse(await new Message("Vous n'avez pas le droit de répondre à un service en tant que donateur"), 401)
             }
         }
         service.addUser(user);

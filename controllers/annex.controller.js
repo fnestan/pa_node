@@ -207,18 +207,18 @@ class AnnexController {
             const manager = await User.findOne({
                 where: {
                     email: email,
-                    valideForUser: "ACCEPTE"
+                    validForUser: "ACCEPTE"
                 }
             });
             if (manager) {
                 await manager.setRole(role);
                 await manager.save();
                 await annex.addUser(manager);
-                return Response.sendResponse(await await new Message("Le manager à bien été ajouter"), 200);
+                return Response.sendResponse(await new Message("Le manager à bien été ajouter"), 200);
             }
-            return Response.sendResponse(await await new Message("Cet utilisateur n'existe pas"), 400);
+            return Response.sendResponse(await new Message("Cet utilisateur n'existe pas"), 400);
         }
-        return Response.sendResponse(await await new Message("Vous n'avez pas le droit d'ajouter des gérant pour cette Annexe"), 401);
+        return Response.sendResponse(await new Message("Vous n'avez pas le droit d'ajouter des gérant pour cette Annexe"), 401);
     }
 
     static async removeManager(idAnnex, idUser, user) {
@@ -240,18 +240,18 @@ class AnnexController {
             });
             if (manager) {
                 annex.removeUser(manager);
-                return Response.sendResponse(await await new Message("Le manager à bien été supprimer"), 200);
+                return Response.sendResponse(await new Message("Le manager à bien été supprimer"), 200);
             }
-            return Response.sendResponse(await await new Message("Cet utilisateur n'existe pas"), 400);
+            return Response.sendResponse(await new Message("Cet utilisateur n'existe pas"), 400);
         }
-        return Response.sendResponse(await await new Message("Vous n'avez pas le droit de supprimer pour cette Annexe"), 401);
+        return Response.sendResponse(await new Message("Vous n'avez pas le droit de supprimer pour cette Annexe"), 401);
 
     }
 
     static async getMyAnnexes(user) {
         const annexList = await user.getAnnexes();
         console.log(annexList);
-        return Response.sendResponse(await await annexList.filter(annex => annex.active), 200);
+        return Response.sendResponse(await annexList.filter(annex => annex.active), 200);
     }
 
     /**
