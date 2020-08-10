@@ -18,7 +18,7 @@ class ServiceController {
                 id: idService
             }
         });
-        await Service.update({quantite: Sequelize.literal('quantite -' + 1)}, {
+        await Service.update({quantite: Sequelize.literal('registered +' + 1)}, {
             where: {
                 id: idService
             }
@@ -46,6 +46,7 @@ class ServiceController {
             date_service: date_service,
             description: description,
             quantite: quantite,
+            registered: 0,
             status: false,
             actif: true
         });
@@ -123,7 +124,6 @@ class ServiceController {
                 id: idService
             }
         });
-        console.log(service.nom)
         if (service) {
             let isAnswer
             const users = await service.getUsers();
@@ -152,6 +152,17 @@ class ServiceController {
             }
         }
         return Response.sendResponse(await myServices, 200);
+    }
+
+    static async getUserRegisteredForService(idService) {
+        const service = await Service.findOne({
+            where: {
+                id: idService,
+                actif: true
+            }
+        });
+        const users = await service.getUsers();
+        return Response.sendResponse(await users, 200);
     }
 
 }

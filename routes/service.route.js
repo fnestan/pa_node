@@ -36,7 +36,7 @@ module.exports = function (app) {
         try {
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const response = await ServiceController.deleteService(req.params.idService,user);
+            const response = await ServiceController.deleteService(req.params.idService, user);
             res.status(response[1]).json(response[0]);
         } catch (err) {
             res.status(409).json(new Message(err.toString()));
@@ -81,6 +81,16 @@ module.exports = function (app) {
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
             const response = await ServiceController.getPastServices(user);
             res.status(response[1]).json(response[0]);
+        } catch (err) {
+            res.status(409).json(new Message(err.toString()));
+        }
+    });
+
+    app.get("/service/get/users/list/:idService", AuthMiddleware.isManager(), async (req, res) => {
+        try {
+            const response = await ServiceController.getUserRegisteredForService(req.params.idService);
+            res.status(response[1]).json(response[0]);
+            console.log(response[0])
         } catch (err) {
             res.status(409).json(new Message(err.toString()));
         }

@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
         nom: DataTypes.STRING,
         description: DataTypes.STRING,
         quantite: DataTypes.INTEGER,
+        registered: DataTypes.INTEGER,
         status: DataTypes.BOOLEAN,
         actif: DataTypes.BOOLEAN,
     }, {});
