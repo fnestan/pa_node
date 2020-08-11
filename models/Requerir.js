@@ -5,7 +5,8 @@ module.exports = function(sequelize, DataTypes) {
             primaryKey: true,
             autoIncrement: true
         },
-        quantity: DataTypes.FLOAT
+        quantity: DataTypes.FLOAT,
+        quantityLeft: DataTypes.FLOAT
     }, {});
     Requerir.associate = (models) => {
         Requerir.belongsTo(models.Product);

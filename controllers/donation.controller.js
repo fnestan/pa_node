@@ -1,6 +1,6 @@
 const models = require('../models');
 const Annex = models.Annex;
-const Association = models.Association;
+const User = models.User;
 const UserDonation = models.UserDonation;
 const Donation = models.Donation;
 const Product = models.Product;
@@ -49,6 +49,7 @@ class DonationController {
             if (productRequest) {
                 const requerir = await Requerir.create({
                     quantity: products[i].quantity,
+                    quantityLeft: products[i].quantity,
                     DonationId: newDonation.id,
                     ProductId: productRequest.id
                 })
@@ -146,7 +147,7 @@ class DonationController {
                     AnnexId: d.AnnexId
                 }
             });
-            const requerir = await Requerir.update({quantity: Sequelize.literal('quantity -' + donations[i].quantity)}, {
+            const requerir = await Requerir.update({quantity: Sequelize.literal('quantityLeft -' + donations[i].quantity)}, {
                 where: {
                     DonationId: idDonation,
                     ProductId: donations[i].productId
@@ -184,6 +185,30 @@ class DonationController {
             }
         }
         return Response.sendResponse(await {donationHistory: response}, 200);
+    }
+
+    static async getUserRegisteredForDonation(idDonation) {
+        const userDonation = await UserDonation.findAll({
+            attributes: [
+                [Sequelize.fn('DISTINCT', Sequelize.col('UserId')), 'UserId'],
+            ],
+            where: {
+                DonationId: idDonation,
+            },
+        });
+        const users = [];
+        for (let i = 0; i < userDonation.length; i++) {
+            const user = await User.findOne({
+                where: {
+                    id: userDonation[i].UserId,
+                    active: true
+                }
+            });
+            if (user) {
+                users.push(user);
+            }
+        }
+        return Response.sendResponse(users, 200);
     }
 }
 

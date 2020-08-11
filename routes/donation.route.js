@@ -79,4 +79,15 @@ module.exports = function (app) {
             res.status(400).json(new Message(e.toString()))
         }
     });
+
+    app.get("/donation/get/users/list/:idService", async (req, res) => {
+        try {
+            const response = await DonationController.getUserRegisteredForDonation(req.params.idService);
+            res.status(response[1]).json(response[0]);
+            console.log(response[0])
+        } catch (err) {
+            console.log(err)
+            res.status(409).json(new Message(err.toString()));
+        }
+    });
 };
