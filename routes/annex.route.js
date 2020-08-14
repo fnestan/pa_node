@@ -89,10 +89,10 @@ module.exports = function (app) {
     });
     app.post("/annex/availability/create/:idAnnex", bodyParser.json(), AuthMiddleware.isManager(), async (req, res) => {
         try {
-            const {openingTime,closingTime,dayId} = req.body;
+            const {openingTime, closingTime, dayId} = req.body;
             const authorization = req.headers['authorization'];
             const user = await Verification.userFromToken(authorization.split(" ")[1]);
-            const response = await AnnexController.createAvailability(+req.params.idAnnex, openingTime,closingTime,dayId, user);
+            const response = await AnnexController.createAvailability(+req.params.idAnnex, openingTime, closingTime, dayId, user);
             res.status(response[1]).json(response[0]);
         } catch (err) {
             res.status(409).json(new Message(err.toString()));
@@ -172,10 +172,10 @@ module.exports = function (app) {
         }
     });
 
-    app.put('/annex/update/:id', AuthMiddleware.isManager(),bodyParser.json(), async (req, res) => {
+    app.put('/annex/update/:id', AuthMiddleware.isManager(), bodyParser.json(), async (req, res) => {
         console.log(req.body)
         const {name, email, street, zipCode, city, phone, description} = req.body;
-        const allRequireParams = Verification.allRequiredParam(name,description, email, street, zipCode, city, phone, res);
+        const allRequireParams = Verification.allRequiredParam(name, description, email, street, zipCode, city, phone, res);
         if (!allRequireParams) {
             return;
         }
@@ -200,6 +200,20 @@ module.exports = function (app) {
             }
         } else {
             res.status(400).json(new Message("veuillez renseignez un nom"));
+        }
+    });
+
+    app.post('/annex/sendMail', bodyParser.json(), AuthMiddleware.isManager(), async (req, res) => {
+        console.log("dededededee=================================================================")
+        if (req.body.email && req.body.object && req.body.message) {
+            try {
+                const response = await AnnexController.sendMail(req.body.email, req.body.object, req.body.message);
+                res.status(response[1]).json(response[0]);
+            } catch (err) {
+                res.status(409).json(new Message(err.toString()));
+            }
+        } else {
+            res.status(400).json(new Message("veuillez renseignez les données"));
         }
     });
 };

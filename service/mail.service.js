@@ -7,7 +7,7 @@ class MailService {
             service: "Gmail",
             auth: {
                 user: 'nestanfrantz@gmail.com',
-                pass: 'frantz123456789'
+                pass: 'Paris1996**'
 
             },
             tls: {
@@ -17,7 +17,8 @@ class MailService {
 
         const mailOptions = {
             from: 'no-reply@message.com',
-            to: email,//user.email,
+            to: email,
+            subject: object,
             text: message
         };
         await transporter.sendMail(mailOptions, function (error, info) {

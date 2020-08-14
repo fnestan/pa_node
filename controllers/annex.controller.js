@@ -360,6 +360,13 @@ class AnnexController {
             }
         }), 200);
     }
+
+    static async sendMail(email, lobject, message) {
+        await MailService.sendMail(email, lobject, message);
+        return Response.sendResponse(await new Message("test"), 200)
+    }
+
+
 }
 
 
