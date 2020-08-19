@@ -179,7 +179,6 @@ class AnnexController {
         const role = await user.getRole();
         if (u || role.id === 3) {
             await availability.destroy();
-            console.log(annex.id)
             return this.getAnnexByAId(annex.id);
         }
         return Response.sendResponse(await new Message("Vous n'avez pas le droit de supprimer des disponibilité pour cette Annexe"), 401)
@@ -250,7 +249,6 @@ class AnnexController {
 
     static async getMyAnnexes(user) {
         const annexList = await user.getAnnexes();
-        console.log(annexList);
         return Response.sendResponse(await annexList.filter(annex => annex.active), 200);
     }
 
@@ -272,10 +270,10 @@ class AnnexController {
             }
         });
         if (annex) {
-            return Response.sendResponse(await await annex, 200);
+            return Response.sendResponse(await annex, 200);
         }
         const message = new Message("Cette Annex n'existe pas")
-        return Response.sendResponse(await await message, 400)
+        return Response.sendResponse(await message, 400)
     }
 
     /**
@@ -299,7 +297,7 @@ class AnnexController {
                 user: user
             });
             if (reportExist) {
-                return Response.sendResponse(await await new Message("Vous avez déjà reporter " + annex.name), 400);
+                return Response.sendResponse(await new Message("Vous avez déjà reporté " + annex.name), 400);
             }
             const report = await Report.create({
                 reporter: "user"
@@ -363,7 +361,7 @@ class AnnexController {
 
     static async sendMail(email, lobject, message) {
         await MailService.sendMail(email, lobject, message);
-        return Response.sendResponse(await new Message("test"), 200)
+        return Response.sendResponse(await new Message("Le mail a été envoyé"), 200)
     }
 
 

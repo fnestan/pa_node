@@ -48,6 +48,7 @@ module.exports = function (app) {
     app.get('/user/report/:idUser/:idAnnex', AuthMiddleware.isManager(), async (req, res) => {
         try {
             const response = await UserController.reportUser(req.params.idAnnex, req.params.idUser);
+            console.log(response[0])
             res.status(response[1]).json(response[0]);
         } catch (err) {
             const message = new Message(err.toString());

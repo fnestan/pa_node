@@ -82,12 +82,14 @@ class UserController {
         });
         if (annex && user) {
             const reportExist = await Report.findOne({
-                reporter: "annex",
-                annex: annex,
-                user: user
+                where: {
+                    reporter: "annex",
+                    AnnexId: annex.id,
+                    UserId: user.id
+                }
             });
             if (reportExist) {
-                return Response.sendResponse(await new Message(`Vous avez déjà reporté ${user.firstname}  ${user.lastname}`), 200)
+                return Response.sendResponse(await new Message(`Vous avez déjà reporté ${user.firstname}  ${user.lastname}`), 400)
             }
             const report = await Report.create({
                 reporter: "annex"
@@ -96,7 +98,7 @@ class UserController {
             report.setUser(user);
             return Response.sendResponse(await new Message(`Vous venez de reporter l'utilisateur ${user.firstname}  ${user.lastname}`), 200)
         }
-        return Response.sendResponse(await new Message("Vous ne pouvez pas reporter cet utilisateur"), 200)
+        return Response.sendResponse(await new Message("Vous ne pouvez pas reporter cet utilisateur"), 400)
     }
 
     static async updateUser(validForVolunteer, login, firstname, email, lastname, street, zipCode, city, phone, roleId, birthdate, idUser) {
@@ -179,8 +181,10 @@ class UserController {
         const pendingServices = [];
         pendingServices.push(...await this.getPendingServices(user.id));
         pendingDonations.push(...await this.getPendingDonation(user.id));
-        return Response.sendResponse(await {helpedAnnexes: helpedAnnexes, pendingDonations: pendingDonations,
-            pendingServices: pendingServices},200)
+        return Response.sendResponse(await {
+            helpedAnnexes: helpedAnnexes, pendingDonations: pendingDonations,
+            pendingServices: pendingServices
+        }, 200)
     }
 
     static async getAnnexHelpedByServices(idUser) {

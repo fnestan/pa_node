@@ -3,6 +3,7 @@ const Annex = models.Annex;
 const User = models.User;
 const UserDonation = models.UserDonation;
 const Donation = models.Donation;
+const Report = models.Report;
 const Product = models.Product;
 const Requerir = models.Requerir;
 const Stock = models.Stock;
@@ -141,12 +142,6 @@ class DonationController {
                     id: idDonation
                 }
             });
-            const stock = await Stock.update({quantity: Sequelize.literal('quantity +' + donations[i].quantity)}, {
-                where: {
-                    ProductId: donations[i].productId,
-                    AnnexId: d.AnnexId
-                }
-            });
             const requerir = await Requerir.update({quantity: Sequelize.literal('quantityLeft -' + donations[i].quantity)}, {
                 where: {
                     DonationId: idDonation,
@@ -188,6 +183,12 @@ class DonationController {
     }
 
     static async getUserRegisteredForDonation(idDonation) {
+        const donation = await Donation.findOne({
+            where: {
+                id: idDonation,
+                actif: true
+            }
+        });
         const userDonation = await UserDonation.findAll({
             attributes: [
                 [Sequelize.fn('DISTINCT', Sequelize.col('UserId')), 'UserId'],
@@ -205,10 +206,64 @@ class DonationController {
                 }
             });
             if (user) {
-                users.push(user);
+                const us = user.dataValues;
+                const report = Report.findOne({
+                    where: {
+                        reporter: "annex",
+                        AnnexId: donation.AnnexId,
+                        UserId: user.id
+                    }
+                });
+                if (report) {
+                    us.isReported = true;
+                } else {
+                    us.isReported = false;
+                }
+                users.push(us);
             }
         }
         return Response.sendResponse(users, 200);
+    }
+
+    static async getDonOfUser(idDonation, idUser) {
+        const usDonation = await UserDonation.findAll({
+            include: [{
+                model: Product,
+                include: {
+                    model: Type
+                }
+            }],
+            where: {
+                DonationId: idDonation,
+                UserId: idUser
+            }
+        })
+        return Response.sendResponse(usDonation, 200);
+    }
+
+    static async setUserDonationGive(idUserDonation) {
+        const usDonation = await UserDonation.update({give: true}, {
+            where: {
+                id: idUserDonation
+            }
+        });
+        const usDon = await UserDonation.findOne({
+            where: {
+                id: idUserDonation
+            }
+        });
+        const donation = await Donation.findOne({
+            where: {
+                id: usDon.DonationId
+            }
+        });
+        const stock = await Stock.update({quantity: Sequelize.literal('quantity +' + usDon.quantity)}, {
+            where: {
+                ProductId: usDon.ProductId,
+                AnnexId: donation.AnnexId
+            }
+        });
+        return Response.sendResponse(await new Message("La donation est passée en statut donnée"), 200);
     }
 }
 

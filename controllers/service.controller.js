@@ -1,9 +1,12 @@
 const models = require('../models');
 const Service = models.Service;
+const Report = models.Report;
 const Annex = models.Annex;
 const Sequelize = require('sequelize');
 const Response = require('../helpers/response');
 const Message = require('../helpers/errormessage');
+
+const util = require('util')
 
 class ServiceController {
 
@@ -162,7 +165,24 @@ class ServiceController {
             }
         });
         const users = await service.getUsers();
-        return Response.sendResponse(await users, 200);
+        const volunteers = [];
+        for (let i = 0; i < users.length; i++) {
+            const user = users[i].dataValues;
+            const report = await Report.findOne({
+                where: {
+                    reporter: "annex",
+                    AnnexId: service.AnnexId,
+                    UserId: users[i].id
+                }
+            });
+            if (report) {
+                user.isReported = true;
+            } else {
+                user.isReported = false;
+            }
+            volunteers.push(user);
+        }
+        return Response.sendResponse(volunteers, 200);
     }
 
 }

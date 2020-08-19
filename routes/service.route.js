@@ -90,8 +90,8 @@ module.exports = function (app) {
         try {
             const response = await ServiceController.getUserRegisteredForService(req.params.idService);
             res.status(response[1]).json(response[0]);
-            console.log(response[0])
         } catch (err) {
+            console.log(err)
             res.status(409).json(new Message(err.toString()));
         }
     });

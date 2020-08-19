@@ -90,4 +90,26 @@ module.exports = function (app) {
             res.status(409).json(new Message(err.toString()));
         }
     });
+
+    app.get("/donation/get/:idDonation/user/don/:idUser", async (req, res) => {
+        try {
+            const response = await DonationController.getDonOfUser(req.params.idDonation, req.params.idUser);
+            res.status(response[1]).json(response[0]);
+            console.log(response[0])
+        } catch (err) {
+            console.log(err)
+            res.status(409).json(new Message(err.toString()));
+        }
+    });
+
+    app.get("/donation/userDonation/:idUserDonation/setgive", async (req, res) => {
+        try {
+            const response = await DonationController.setUserDonationGive(req.params.idUserDonation);
+            res.status(response[1]).json(response[0]);
+            console.log(response[0])
+        } catch (err) {
+            console.log(err)
+            res.status(409).json(new Message(err.toString()));
+        }
+    });
 };
