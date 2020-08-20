@@ -9,4 +9,5 @@ module.exports = function () {
     require('./ticket.route')(...arguments);
     require('./donation.route')(...arguments);
     require('./service.route')(...arguments);
+    require('./stock.route')(...arguments);
 };

@@ -7,5 +7,6 @@ module.exports = {
     ProductController: require('./product.controller'),
     TypeController: require('./type.controller'),
     TicketController: require('./ticket.controller'),
-    ServiceController: require('./service.controller')
+    ServiceController: require('./service.controller'),
+    StockController: require('./stock.controller')
 };

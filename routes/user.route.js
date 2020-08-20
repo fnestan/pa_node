@@ -22,7 +22,7 @@ module.exports = function (app) {
     /**
      *
      */
-    app.put("/user/validateVolunter/:idUser", AuthMiddleware.isAdmin(), async (req, res) => {
+    app.put("/user/validateVolunter/:idUser", bodyParser.json(), AuthMiddleware.isAdmin(), async (req, res) => {
         try {
             const user = await UserController.validateVolunteer(+req.params.idUser, req.body.valide);
             res.status(response[1]).json(response[0]);
@@ -35,7 +35,7 @@ module.exports = function (app) {
     /**
      *
      */
-    app.put("/user/validateUser/:idUser", AuthMiddleware.isAdmin(), async (req, res) => {
+    app.put("/user/validateUser/:idUser", bodyParser.json(), AuthMiddleware.isAdmin(), async (req, res) => {
         try {
             const user = await UserController.validateUser(+req.params.idUser, req.body.valide);
             res.status(response[1]).json(response[0]);
