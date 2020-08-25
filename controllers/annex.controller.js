@@ -337,7 +337,7 @@ class AnnexController {
                     active: true
                 }
             });
-            return Response.sendResponse(new Message("L'annexe" + name + " a bien été modifiée"), 200);
+            return Response.sendResponse(new Message("L'annexe " + name + " a bien été modifiée"), 200);
         }
         return Response.sendResponse(new Message("Vous n'êtes pas manager de cette annexe"), 403)
     }

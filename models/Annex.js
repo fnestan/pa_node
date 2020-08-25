@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         street: DataTypes.STRING,
         city: DataTypes.STRING,
         description: DataTypes.STRING,
-        phone: DataTypes.INTEGER,
+        phone: DataTypes.STRING,
         active: DataTypes.BOOLEAN,
         valid: DataTypes.BOOLEAN,
     }, {});
